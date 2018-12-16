@@ -127,6 +127,15 @@ namespace XxlJob.Core.Executor
             }
         }
 
+        private ReturnT Log(long logDateTim, int logId, int fromLineNum)
+        {
+            // log filename: logPath/yyyy-MM-dd/9999.log
+            //string logFileName = XxlJobFileAppender.makeLogFileName(new Date(logDateTim), logId);
+            //LogResult logResult = XxlJobFileAppender.readLog(logFileName, fromLineNum);
+            LogResult logResult = null;
+            return ReturnT.CreateSucceededResult(null, logResult);
+        }
+
         private ReturnT Run(TriggerParam triggerParam)
         {
             if (Constants.GlueType.BEAN != triggerParam.glueType)
