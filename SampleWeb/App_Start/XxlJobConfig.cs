@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,7 +9,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using com.xxl.job.core.biz.model;
 using XxlJob.Core;
+using XxlJob.Core.Executor;
 
 namespace SampleWeb
 {
@@ -18,7 +21,7 @@ namespace SampleWeb
         {
             config.EnableXxlJob(jobConfig =>
             {
-
+                //jobConfig.AccessToken = "test invalid token";
             });
         }
     }
@@ -30,14 +33,14 @@ namespace SampleWeb
         private static readonly string DefaultListenPath = "job";
 
 
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, Action<XxlJobExecutorConfig> configure = null)
+        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, Action<JobExecutorConfig> configure = null)
         {
             EnableXxlJob(httpConfiguration, DefaultListenPath, configure);
         }
 
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, string listenPath, Action<XxlJobExecutorConfig> configure = null)
+        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, string listenPath, Action<JobExecutorConfig> configure = null)
         {
-            var jobConfig = new XxlJobExecutorConfig();
+            var jobConfig = new JobExecutorConfig();
             configure?.Invoke(jobConfig);
 
             httpConfiguration.Routes.MapHttpRoute(
@@ -52,11 +55,11 @@ namespace SampleWeb
 
     public class XxlJobExecutorHandler : HttpMessageHandler
     {
-        private readonly XxlJobExecutor _executor;
+        private readonly JobExecutor _executor;
 
-        public XxlJobExecutorHandler(XxlJobExecutorConfig config)
+        public XxlJobExecutorHandler(JobExecutorConfig config)
         {
-            _executor = new XxlJobExecutor(config);
+            _executor = new JobExecutor(config);
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -68,6 +71,15 @@ namespace SampleWeb
             response.Content = new ByteArrayContent(responseBytes);
             response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html") { CharSet = "UTF-8" };
             return Task.FromResult(response);
+        }
+    }
+
+    public class MessageScheduler : IJobHandler
+    {
+        public override ReturnT Execute(string param)
+        {
+            File.AppendAllText(@"D:\job.txt", $"{DateTime.Now.ToString("O")} execute job" + Environment.NewLine);
+            return ReturnT.SUCCESS;
         }
     }
 }

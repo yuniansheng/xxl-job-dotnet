@@ -1,4 +1,5 @@
-﻿using System;
+﻿using com.xxl.job.core.rpc.codec;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,10 +39,10 @@ namespace XxlJob.Core.RPC.Remoting.Provider
             return serviceKey;
         }
 
-        public XxlRpcResponse InvokeService(XxlRpcRequest xxlRpcRequest)
+        public RpcResponse InvokeService(RpcRequest xxlRpcRequest)
         {
             //  make response
-            XxlRpcResponse xxlRpcResponse = new XxlRpcResponse();
+            RpcResponse xxlRpcResponse = new RpcResponse();
             xxlRpcResponse.requestId = xxlRpcRequest.requestId;
 
             // match service bean

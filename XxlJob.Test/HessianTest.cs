@@ -1,4 +1,6 @@
-﻿using hessiancsharp.io;
+﻿using com.xxl.job.core.biz.model;
+using com.xxl.job.core.rpc.codec;
+using hessiancsharp.io;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,17 +37,9 @@ namespace XxlJob.Test
 
             var stream = new MemoryStream(buffer);
             CHessianInput input = new CHessianInput(stream);
-            Hashtable obj = (Hashtable)input.ReadObject();
-            Assert.Equal(7, obj.Count);
 
-
-
-            var parameter1Type = (Hashtable)(obj["parameterTypes"] as object[])[0];
-            Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", parameter1Type["name"]);
-            Assert.Equal("run", obj["methodName"]);
-
-            stream.Seek(0, SeekOrigin.Begin);
-            var request = (XxlRpcRequest)input.ReadObject(typeof(XxlRpcRequest));
+            var request = (RpcRequest)input.ReadObject();
+            Assert.Equal("172.18.23.132:181/job", request.serverAddress);
             Assert.Equal("cdaff813abf02ffe06be0469b3f3ef43", request.accessToken);
             Assert.Equal("com.xxl.job.core.biz.ExecutorBiz", request.className);
             Assert.Equal(1544683342701, request.createMillisTime);
@@ -53,19 +47,20 @@ namespace XxlJob.Test
             Assert.Null(request.requestId);
             Assert.Null(request.version);
 
-            var parameter1 = request.parameters[0] as Hashtable;
-            Assert.Equal(294, parameter1["logId"]);
-            Assert.Equal(0, parameter1["broadcastIndex"]);
-            Assert.Equal(1, parameter1["broadcastTotal"]);
-            Assert.Equal("BEAN", parameter1["glueType"]);
-            Assert.Equal("", parameter1["glueSource"]);
-            Assert.Equal(1544602987000, parameter1["glueUpdatetime"]);
+            Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", (request.parameterTypes[0] as Hashtable)["name"]);
 
-            Assert.Equal("MessageScheduler", parameter1["executorHandler"]);
-            Assert.Equal(4, parameter1["jobId"]);
-            Assert.Equal("", parameter1["executorParams"]);
-            Assert.Equal("DISCARD_LATER", parameter1["executorBlockStrategy"]);
-            Assert.Equal(1544683342701, parameter1["logDateTim"]);
+            var parameter1 = request.parameters[0] as TriggerParam;
+            Assert.Equal(294, parameter1.logId);
+            Assert.Equal(0, parameter1.broadcastIndex);
+            Assert.Equal(1, parameter1.broadcastTotal);
+            Assert.Equal("BEAN", parameter1.glueType);
+            Assert.Equal("", parameter1.glueSource);
+            Assert.Equal(1544602987000, parameter1.glueUpdatetime);
+            Assert.Equal("MessageScheduler", parameter1.executorHandler);
+            Assert.Equal(4, parameter1.jobId);
+            Assert.Equal("", parameter1.executorParams);
+            Assert.Equal("DISCARD_LATER", parameter1.executorBlockStrategy);
+            Assert.Equal(1544683342701, parameter1.logDateTim);
         }
     }
 }

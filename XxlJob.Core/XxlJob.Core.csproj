@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Hessiancsharp">
+      <HintPath>..\Lib\Hessiancsharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,20 +44,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="XxlJobExecutor.cs" />
-    <Compile Include="Executor\Constants.cs" />
-    <Compile Include="Executor\ExecutorBiz.cs" />
+    <Compile Include="Executor\JobHandlerFactory.cs" />
+    <Compile Include="Executor\JobThreadFactory.cs" />
+    <Compile Include="Executor\JobExecutor.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Executor\IJobHandler.cs" />
     <Compile Include="Executor\JobThread.cs" />
-    <Compile Include="Executor\ReturnT.cs" />
-    <Compile Include="Executor\TriggerParam.cs" />
-    <Compile Include="Executor\XxlJobExecutor.cs" />
+    <Compile Include="Model\ReturnT.cs" />
+    <Compile Include="Model\TriggerParam.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RPC\Remoting\Provider\XxlRpcProviderFactory.cs" />
-    <Compile Include="RPC\XxlRpcRequest.cs" />
-    <Compile Include="RPC\XxlRpcResponse.cs" />
+    <Compile Include="RPC\RpcRequest.cs" />
+    <Compile Include="RPC\RpcResponse.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
-    <Compile Include="XxlJobExecutorConfig.cs" />
+    <Compile Include="Executor\JobExecutorConfig.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

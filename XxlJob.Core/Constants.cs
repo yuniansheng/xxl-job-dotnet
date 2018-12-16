@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XxlJob.Core.Executor
+namespace XxlJob.Core
 {
     internal static class Constants
     {

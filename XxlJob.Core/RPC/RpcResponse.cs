@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XxlJob.Core.RPC
+namespace com.xxl.job.core.rpc.codec
 {
-    public class XxlRpcResponse
+    public class RpcResponse
     {
         public string requestId;
 

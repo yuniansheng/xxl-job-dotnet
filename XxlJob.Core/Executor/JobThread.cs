@@ -1,4 +1,5 @@
-﻿using System;
+﻿using com.xxl.job.core.biz.model;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,39 +11,48 @@ namespace XxlJob.Core.Executor
 {
     public class JobThread
     {
-        private int jobId;
-        private Thread thread;
-        private ConcurrentQueue<TriggerParam> triggerQueue;
+        private readonly int _jobId;
+        private readonly JobExecutorConfig _executorConfig;
+        private readonly ConcurrentQueue<TriggerParam> _triggerQueue;
         // avoid repeat trigger for the same TRIGGER_LOG_ID
-        private ConcurrentDictionary<int, byte> triggerLogIdSet;
+        private readonly ConcurrentDictionary<int, byte> _triggerLogIdSet;
+        private readonly AutoResetEvent _queueHasDataEvent;
 
-        private volatile bool toStop = false;
-        private string stopReason;
-        private bool running = false;
-        private int idleTimes = 0;
+        private Thread _thread;
+        private bool _running = false;
+        private volatile bool _toStop = false;
+        private string _stopReason;
 
-        public IJobHandler Handler { get; private set; }
+        public bool Stopped { get { return _toStop; } }
 
-        public JobThread(int jobId, IJobHandler handler)
+        public JobThread(int jobId, JobExecutorConfig executorConfig)
         {
-            this.jobId = jobId;
-            this.Handler = handler;
-            this.triggerQueue = new ConcurrentQueue<TriggerParam>();
-            this.triggerLogIdSet = new ConcurrentDictionary<int, byte>();
+            _jobId = jobId;
+            _executorConfig = executorConfig;
+            _triggerQueue = new ConcurrentQueue<TriggerParam>();
+            _triggerLogIdSet = new ConcurrentDictionary<int, byte>();
+            _queueHasDataEvent = new AutoResetEvent(false);
         }
 
-        public ReturnT<string> PushTriggerQueue(TriggerParam triggerParam)
+        public ReturnT PushTriggerQueue(TriggerParam triggerParam)
         {
             // avoid repeat
-            if (triggerLogIdSet.ContainsKey(triggerParam.LogId))
+            if (_triggerLogIdSet.ContainsKey(triggerParam.logId))
             {
                 //logger.info(">>>>>>>>>>> repeate trigger job, logId:{}", triggerParam.getLogId());
-                return new ReturnT<string>(ReturnT.FAIL_CODE, "repeate trigger job, logId:" + triggerParam.LogId);
+                return ReturnT.CreateFailedResult("repeate trigger job, logId:" + triggerParam.logId);
             }
 
-            triggerLogIdSet[triggerParam.JobId] = 0;
-            triggerQueue.Enqueue(triggerParam);
+            _triggerLogIdSet[triggerParam.jobId] = 0;
+            _triggerQueue.Enqueue(triggerParam);
+            _queueHasDataEvent.Set();
             return ReturnT.SUCCESS;
+        }
+
+        public void Start()
+        {
+            _thread = new Thread(Run);
+            _thread.Start();
         }
 
         public void ToStop(string stopReason)
@@ -52,50 +62,38 @@ namespace XxlJob.Core.Executor
              * 在阻塞出抛出InterruptedException异常,但是并不会终止运行的线程本身；
              * 所以需要注意，此处彻底销毁本线程，需要通过共享变量方式；
              */
-            this.toStop = true;
-            this.stopReason = stopReason;
+            _toStop = true;
+            _stopReason = stopReason;
+        }
+
+        public void Interrupt(string stopReason)
+        {
+            ToStop(stopReason);
+            _thread?.Interrupt();
         }
 
         public bool IsRunningOrHasQueue()
         {
-            return running || triggerQueue.Count > 0;
+            return _running || _triggerQueue.Count > 0;
         }
 
-        public void Start()
-        {
-            thread = new Thread(Run);
-            thread.Start();
-        }
+
 
         private void Run()
         {
-            // init
-            try
-            {
-                Handler.Init();
-            }
-            catch (Exception ex)
-            {
-                //logger.error(e.getMessage(), e);
-            }
-
-            byte temp;
             TriggerParam triggerParam = null;
-
-            // execute
-            while (!toStop)
+            while (!_toStop)
             {
-                running = false;
-                idleTimes++;
-
-                ReturnT<string> executeResult = null;
+                _running = false;
+                triggerParam = null;
+                ReturnT executeResult = null;
                 try
                 {
-                    if (triggerQueue.TryDequeue(out triggerParam))
+                    if (_triggerQueue.TryDequeue(out triggerParam))
                     {
-                        running = true;
-                        idleTimes = 0;
-                        triggerLogIdSet.TryRemove(triggerParam.LogId, out temp);
+                        _running = true;
+                        byte temp;
+                        _triggerLogIdSet.TryRemove(triggerParam.logId, out temp);
 
                         // log filename, like "logPath/yyyy-MM-dd/9999.log"
                         //stopReason logFileName = XxlJobFileAppender.makeLogFileName(new Date(triggerParam.getLogDateTim()), triggerParam.getLogId());
@@ -105,14 +103,14 @@ namespace XxlJob.Core.Executor
                         // execute
                         //XxlJobLogger.log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.getExecutorParams());
 
-                        if (triggerParam.ExecutorTimeout > 0)
+                        var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
+                        if (triggerParam.executorTimeout > 0)
                         {
-                            //executeResult = Handler.Execute(triggerParam.ExecutorParams);
+                            executeResult = handler.Execute(triggerParam.executorParams);
                         }
                         else
                         {
-                            // just execute
-                            executeResult = Handler.Execute(triggerParam.ExecutorParams);
+                            executeResult = handler.Execute(triggerParam.executorParams);
                         }
 
                         if (executeResult == null)
@@ -123,71 +121,46 @@ namespace XxlJob.Core.Executor
                     }
                     else
                     {
-                        running = false;
-                        idleTimes++;
-                        if (idleTimes > 30)
+                        try
                         {
-                            XxlJobExecutor.RemoveJobThread(jobId, "excutor idel times over limit.");
+                            if (!_queueHasDataEvent.WaitOne(TimeSpan.FromSeconds(90)))
+                            {
+                                ToStop("excutor idel times over limit.");
+                                //XxlJobExecutor.RemoveJobThread(_jobId, "excutor idel times over limit.");
+                                break;
+                            }
                         }
-                        //todo:sleep 3 seconds
+                        catch (ThreadInterruptedException)
+                        {
+                            break;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (toStop)
-                    {
-                        //XxlJobLogger.log("<br>----------- JobThread toStop, stopReason:" + stopReason);
-                    }
-
                     var errorMsg = ex.ToString();
-                    executeResult = new ReturnT<String>(ReturnT.FAIL_CODE, errorMsg);
-
+                    executeResult = ReturnT.CreateFailedResult(errorMsg);
                     //XxlJobLogger.log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
                 }
                 finally
                 {
-                    if (triggerParam != null)
+                    if (executeResult != null)
                     {
-                        // callback handler info
-                        if (!toStop)
-                        {
-                            // commonm
-                            //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), executeResult));
-                        }
-                        else
-                        {
-                            // is killed
-                            ReturnT<string> stopResult = new ReturnT<string>(ReturnT.FAIL_CODE, stopReason + " [job running，killed]");
-                            //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), stopResult));
-                        }
+                        //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), executeResult));
                     }
                 }
             }
 
+            //XxlJobLogger.log("<br>----------- JobThread toStop, stopReason:" + stopReason);            
+
             // callback trigger request in queue
-            while (triggerQueue.TryDequeue(out triggerParam))
+            while (_triggerQueue.TryDequeue(out triggerParam))
             {
-                // is killed
-                ReturnT<string> stopResult = new ReturnT<string>(ReturnT.FAIL_CODE, stopReason + " [job not executed, in the job queue, killed.]");
+                var stopResult = ReturnT.CreateFailedResult(_stopReason + " [job not executed, in the job queue, killed.]");
                 //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), stopResult));
             }
 
-            // destroy
-            try
-            {
-                Handler.Destroy();
-            }
-            catch (Exception ex)
-            {
-                //logger.error(e.getMessage(), e);
-            }
-
             //logger.info(">>>>>>>>>>> xxl-job JobThread stoped, hashCode:{}", Thread.currentThread());
-        }
-
-        public void Interrupt()
-        {
-            thread?.Interrupt();
         }
     }
 }
