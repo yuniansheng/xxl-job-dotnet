@@ -54,7 +54,6 @@
     <Compile Include="Model\ReturnT.cs" />
     <Compile Include="Model\TriggerParam.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RPC\Remoting\Provider\XxlRpcProviderFactory.cs" />
     <Compile Include="RPC\RpcRequest.cs" />
     <Compile Include="RPC\RpcResponse.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
