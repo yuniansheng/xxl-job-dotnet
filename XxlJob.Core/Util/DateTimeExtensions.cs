@@ -14,5 +14,10 @@ namespace XxlJob.Core.Util
         {
             return (long)(DateTime.UtcNow - Jan1st1970).TotalMilliseconds;
         }
+
+        public static DateTime FromMillis(long millis)
+        {
+            return Jan1st1970.AddMilliseconds(millis);
+        }
     }
 }

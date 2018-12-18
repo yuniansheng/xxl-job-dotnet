@@ -61,7 +61,7 @@ namespace XxlJob.Test
 
             var request = (RpcRequest)input.ReadObject();
             Assert.Equal("com.xxl.job.core.biz.ExecutorBiz", request.className);
-            Assert.Equal("run", request.methodName);
+            Assert.Equal("log", request.methodName);
 
             //Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", (request.parameterTypes[0] as Hashtable)["name"]);
         }
