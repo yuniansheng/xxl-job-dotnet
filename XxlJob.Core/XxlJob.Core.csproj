@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Executor\JobHandlerFactory.cs" />
+    <Compile Include="Executor\JobLogger.cs" />
     <Compile Include="Executor\JobThreadFactory.cs" />
     <Compile Include="Executor\JobExecutor.cs" />
     <Compile Include="Constants.cs" />
