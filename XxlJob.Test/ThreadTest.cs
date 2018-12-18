@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,10 +43,19 @@ namespace XxlJob.Test
             Thread.Sleep(1000 * 3);
         }
 
+        [Fact]
+        public void CallContextTest()
+        {
+            CallContext.LogicalSetData("name", "nelson");
+
+            AsyncMethod().Wait();
+            Assert.Equal("nelson", CallContext.LogicalGetData("name"));
+        }
+
         private void Run()
         {
             output.WriteLine(Guid.NewGuid().ToString());
-            
+
             try
             {
                 //e.WaitOne(TimeSpan.FromSeconds(10));
@@ -60,6 +70,13 @@ namespace XxlJob.Test
             {
                 output.WriteLine(Thread.CurrentThread.ManagedThreadId + " " + ex.ToString());
             }
+        }
+
+        private async Task AsyncMethod()
+        {
+            Assert.Equal("nelson", CallContext.LogicalGetData("name"));
+            await Task.Delay(1000);
+            Assert.Equal("nelson", CallContext.LogicalGetData("name"));
         }
     }
 }
