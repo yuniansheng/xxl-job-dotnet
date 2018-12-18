@@ -62,8 +62,9 @@ namespace XxlJob.Test
             var request = (RpcRequest)input.ReadObject();
             Assert.Equal("com.xxl.job.core.biz.ExecutorBiz", request.className);
             Assert.Equal("log", request.methodName);
-
-            //Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", (request.parameterTypes[0] as Hashtable)["name"]);
+            Assert.Equal(1545022980000, (long)request.parameters[0]);
+            Assert.Equal(1429, (int)request.parameters[1]);
+            Assert.Equal(1, (int)request.parameters[2]);
         }
 
         private CHessianInput GetHessianInput(string content)

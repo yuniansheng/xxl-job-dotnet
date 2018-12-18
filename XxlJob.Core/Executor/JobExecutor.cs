@@ -127,7 +127,7 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        private ReturnT Log(long logDateTim, int logId, int fromLineNum)
+        private ReturnT Log(long logDateTime, int logId, int fromLineNum)
         {
             // log filename: logPath/yyyy-MM-dd/9999.log
             //string logFileName = XxlJobFileAppender.makeLogFileName(new Date(logDateTim), logId);
