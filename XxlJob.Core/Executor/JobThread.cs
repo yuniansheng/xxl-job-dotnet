@@ -138,10 +138,6 @@ namespace XxlJob.Core.Executor
                 }
                 catch (Exception ex)
                 {
-                    if (ex is ThreadInterruptedException && _toStop)
-                    {
-                        JobLogger.Log("<br>----------- JobThread toStop, stopReason:" + _stopReason);
-                    }
                     var errorMsg = ex.ToString();
                     executeResult = ReturnT.CreateFailedResult(errorMsg);
                     JobLogger.Log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
@@ -154,6 +150,8 @@ namespace XxlJob.Core.Executor
                     }
                 }
             }
+
+            JobLogger.Log("<br>----------- JobThread toStop, stopReason:" + _stopReason);
 
             // callback trigger request in queue
             while (_triggerQueue.TryDequeue(out triggerParam))
