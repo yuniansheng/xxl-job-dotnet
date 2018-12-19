@@ -100,7 +100,7 @@ namespace XxlJob.Core.Executor
         }
 
 
-        private ReturnT beat()
+        private ReturnT Beat()
         {
             return ReturnT.SUCCESS;
         }
