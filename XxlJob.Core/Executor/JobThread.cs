@@ -95,18 +95,23 @@ namespace XxlJob.Core.Executor
                         byte temp;
                         _triggerLogIdSet.TryRemove(triggerParam.logId, out temp);
                         JobLogger.SetLogFileName(_executorConfig.LogPath, triggerParam.LogDataTime, triggerParam.logId);
-                        //ShardingUtil.setShardingVo(new ShardingUtil.ShardingVO(triggerParam.getBroadcastIndex(), triggerParam.getBroadcastTotal()));
+                        var executionContext = new JobExecutionContext()
+                        {
+                            BroadcastIndex = triggerParam.broadcastIndex,
+                            BroadcastTotal = triggerParam.broadcastTotal,
+                            ExecutorParams = triggerParam.executorParams
+                        };
                         // execute
                         JobLogger.Log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.executorParams);
 
                         var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
                         if (triggerParam.executorTimeout > 0)
                         {
-                            executeResult = handler.Execute(triggerParam.executorParams);
+                            executeResult = handler.Execute(executionContext);
                         }
                         else
                         {
-                            executeResult = handler.Execute(triggerParam.executorParams);
+                            executeResult = handler.Execute(executionContext);
                         }
 
                         if (executeResult == null)

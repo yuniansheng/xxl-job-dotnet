@@ -76,7 +76,7 @@ namespace SampleWeb
 
     public class MessageScheduler : IJobHandler
     {
-        public override ReturnT Execute(string param)
+        public override ReturnT Execute(JobExecutionContext context)
         {
             File.AppendAllText(@"D:\job.txt", $"{DateTime.Now.ToString("O")} execute job" + Environment.NewLine);
             return ReturnT.SUCCESS;

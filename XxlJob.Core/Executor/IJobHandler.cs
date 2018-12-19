@@ -17,7 +17,7 @@ namespace XxlJob.Core.Executor
 
 
 
-        public abstract ReturnT Execute(string param);
+        public abstract ReturnT Execute(JobExecutionContext context);
 
         public virtual void Init() { }
 
