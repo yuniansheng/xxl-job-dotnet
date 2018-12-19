@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +13,13 @@ namespace XxlJob.Core
         public JobExecutorConfig()
         {
             JobHandlerFactory = new DefaultJobHandlerFactory();
+            LogPath = Path.Combine(Directory.GetCurrentDirectory(), "xxl-job", "JobHandlerLogs");
         }
 
         public string AccessToken { get; set; }
 
         public JobHandlerFactory JobHandlerFactory { get; set; }
+
+        public string LogPath { get; set; }
     }
 }

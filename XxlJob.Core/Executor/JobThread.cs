@@ -94,14 +94,10 @@ namespace XxlJob.Core.Executor
                         _running = true;
                         byte temp;
                         _triggerLogIdSet.TryRemove(triggerParam.logId, out temp);
-
-                        // log filename, like "logPath/yyyy-MM-dd/9999.log"
-                        //stopReason logFileName = XxlJobFileAppender.makeLogFileName(new Date(triggerParam.getLogDateTim()), triggerParam.getLogId());
-                        //XxlJobFileAppender.contextHolder.set(logFileName);
+                        JobLogger.SetLogFileName(_executorConfig.LogPath, triggerParam.LogDataTime, triggerParam.logId);
                         //ShardingUtil.setShardingVo(new ShardingUtil.ShardingVO(triggerParam.getBroadcastIndex(), triggerParam.getBroadcastTotal()));
-
                         // execute
-                        //XxlJobLogger.log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.getExecutorParams());
+                        JobLogger.Log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.executorParams);
 
                         var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
                         if (triggerParam.executorTimeout > 0)
@@ -117,7 +113,7 @@ namespace XxlJob.Core.Executor
                         {
                             executeResult = IJobHandler.FAIL;
                         }
-                        //XxlJobLogger.log("<br>----------- xxl-job job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
+                        JobLogger.Log("<br>----------- xxl-job job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
                     }
                     else
                     {
@@ -126,7 +122,6 @@ namespace XxlJob.Core.Executor
                             if (!_queueHasDataEvent.WaitOne(TimeSpan.FromSeconds(90)))
                             {
                                 ToStop("excutor idel times over limit.");
-                                //XxlJobExecutor.RemoveJobThread(_jobId, "excutor idel times over limit.");
                                 break;
                             }
                         }
@@ -138,9 +133,13 @@ namespace XxlJob.Core.Executor
                 }
                 catch (Exception ex)
                 {
+                    if (ex is ThreadInterruptedException && _toStop)
+                    {
+                        JobLogger.Log("<br>----------- JobThread toStop, stopReason:" + _stopReason);
+                    }
                     var errorMsg = ex.ToString();
                     executeResult = ReturnT.CreateFailedResult(errorMsg);
-                    //XxlJobLogger.log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
+                    JobLogger.Log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
                 }
                 finally
                 {
@@ -151,16 +150,12 @@ namespace XxlJob.Core.Executor
                 }
             }
 
-            //XxlJobLogger.log("<br>----------- JobThread toStop, stopReason:" + stopReason);            
-
             // callback trigger request in queue
             while (_triggerQueue.TryDequeue(out triggerParam))
             {
                 var stopResult = ReturnT.CreateFailedResult(_stopReason + " [job not executed, in the job queue, killed.]");
                 //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), stopResult));
             }
-
-            //logger.info(">>>>>>>>>>> xxl-job JobThread stoped, hashCode:{}", Thread.currentThread());
         }
     }
 }

@@ -129,10 +129,7 @@ namespace XxlJob.Core.Executor
 
         private ReturnT Log(long logDateTime, int logId, int fromLineNum)
         {
-            // log filename: logPath/yyyy-MM-dd/9999.log
-            //string logFileName = XxlJobFileAppender.makeLogFileName(new Date(logDateTim), logId);
-            //LogResult logResult = XxlJobFileAppender.readLog(logFileName, fromLineNum);
-            LogResult logResult = null;
+            var logResult = JobLogger.ReadLog(_config.LogPath, DateTimeExtensions.FromMillis(logDateTime), logId, fromLineNum);
             return ReturnT.CreateSucceededResult(null, logResult);
         }
 

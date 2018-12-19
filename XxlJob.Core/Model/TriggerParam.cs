@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using XxlJob.Core.Util;
 
 namespace com.xxl.job.core.biz.model
 {
@@ -31,5 +32,13 @@ namespace com.xxl.job.core.biz.model
         public int broadcastIndex;
 
         public int broadcastTotal;
+
+        public DateTime LogDataTime
+        {
+            get
+            {
+                return DateTimeExtensions.FromMillis(logDateTim);
+            }
+        }
     }
 }
