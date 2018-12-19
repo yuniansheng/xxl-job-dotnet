@@ -52,6 +52,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Executor\IJobHandler.cs" />
     <Compile Include="Executor\JobThread.cs" />
+    <Compile Include="Executor\TriggerCallbackThread.cs" />
     <Compile Include="Model\LogResult.cs" />
     <Compile Include="Model\ReturnT.cs" />
     <Compile Include="Model\TriggerParam.cs" />
