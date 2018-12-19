@@ -90,13 +90,11 @@ namespace XxlJob.Test
             Assert.Equal("com.xxl.job.core.biz.AdminBiz", request.className);
             Assert.Equal("callback", request.methodName);
 
-            var parameter1 = (request.parameters[0] as ArrayList)[0] as Hashtable;
-            Assert.Equal(2038, parameter1["logId"]);
-
-            var executeResult = parameter1["executeResult"] as ReturnT;
-            Assert.Equal(200, executeResult.code);
-            Assert.Equal("共确认了0/0条消息", executeResult.msg);
-            Assert.Null(executeResult.content);
+            var callback = (request.parameters[0] as ArrayList)[0] as HandleCallbackParam;
+            Assert.Equal(2038, callback.logId);
+            Assert.Equal(200, callback.executeResult.code);
+            Assert.Equal("共确认了0/0条消息", callback.executeResult.msg);
+            Assert.Null(callback.executeResult.content);
         }
 
         private CHessianInput GetHessianInput(string content)

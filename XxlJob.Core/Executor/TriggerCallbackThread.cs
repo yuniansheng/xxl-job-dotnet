@@ -224,13 +224,4 @@ namespace XxlJob.Core.Executor
     }
     */
     }
-
-    internal class HandleCallbackParam
-    {
-        public int LogId { get; set; }
-
-        public long LogDateTim { get; set; }
-
-        private ReturnT ExecuteResult { get; set; }
-    }
 }
