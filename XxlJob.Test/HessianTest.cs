@@ -79,6 +79,26 @@ namespace XxlJob.Test
             Assert.Equal(1, (int)request.parameters[2]);
         }
 
+        [Fact]
+        public void CallbackTest()
+        {
+            var str = "4d740025636f6d2e78786c2e6a6f622e636f72652e7270632e636f6465632e5270635265717565737453000d7365727665724164647265737353002b687474703a2f2f3137322e31382e32312e3134343a383038302f78786c2d6a6f622d61646d696e2f6170695300106372656174654d696c6c697354696d654c00000167c62501b653000b616363657373546f6b656e5300206364616666383133616266303266666530366265303436396233663365663433530009636c6173734e616d6553001d636f6d2e78786c2e6a6f622e636f72652e62697a2e41646d696e42697a53000a6d6574686f644e616d6553000863616c6c6261636b53000e706172616d657465725479706573567400105b6a6176612e6c616e672e436c6173736c000000014d74000f6a6176612e6c616e672e436c6173735300046e616d6553000e6a6176612e7574696c2e4c6973747a7a53000a706172616d6574657273567400075b6f626a6563746c00000001566c000000014d74002e636f6d2e78786c2e6a6f622e636f72652e62697a2e6d6f64656c2e48616e646c6543616c6c6261636b506172616d5300056c6f67496449000007f653000d65786563757465526573756c744d740022636f6d2e78786c2e6a6f622e636f72652e62697a2e6d6f64656c2e52657475726e54530004636f646549000000c85300036d736753000ae585b1e7a1aee8aea4e4ba86302f30e69da1e6b688e681af530007636f6e74656e744e7a7a7a7a7a";
+            CHessianInput input = GetHessianInput(str);
+            var request = (RpcRequest)input.ReadObject();
+            Assert.Equal("http://172.18.21.144:8080/xxl-job-admin/api", request.serverAddress);
+            Assert.Equal("cdaff813abf02ffe06be0469b3f3ef43", request.accessToken);
+            Assert.Equal("com.xxl.job.core.biz.AdminBiz", request.className);
+            Assert.Equal("callback", request.methodName);
+
+            var parameter1 = (request.parameters[0] as ArrayList)[0] as Hashtable;
+            Assert.Equal(2038, parameter1["logId"]);
+
+            var executeResult = parameter1["executeResult"] as ReturnT;
+            Assert.Equal(200, executeResult.code);
+            Assert.Equal("共确认了0/0条消息", executeResult.msg);
+            Assert.Null(executeResult.content);
+        }
+
         private CHessianInput GetHessianInput(string content)
         {
             var buffer = new byte[content.Length / 2];
