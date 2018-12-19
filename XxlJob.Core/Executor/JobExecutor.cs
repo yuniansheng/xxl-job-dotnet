@@ -129,7 +129,7 @@ namespace XxlJob.Core.Executor
 
         private ReturnT Log(long logDateTime, int logId, int fromLineNum)
         {
-            var logResult = JobLogger.ReadLog(_config.LogPath, DateTimeExtensions.FromMillis(logDateTime), logId, fromLineNum);
+            var logResult = JobLogger.ReadLog(_config.LogPath, logDateTime, logId, fromLineNum);
             return ReturnT.CreateSucceededResult(null, logResult);
         }
 

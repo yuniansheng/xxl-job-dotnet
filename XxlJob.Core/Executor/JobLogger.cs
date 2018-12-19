@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using XxlJob.Core.Util;
 
 namespace XxlJob.Core.Executor
 {
@@ -17,17 +18,27 @@ namespace XxlJob.Core.Executor
         {
             var appendLog = string.Format(format, args);
             var callInfo = new StackTrace(true).GetFrame(1);
-            LogDetail(callInfo, appendLog);
+            LogDetail(GetLogFileName(), callInfo, appendLog);
         }
 
         public static void Log(Exception ex)
         {
             var callInfo = new StackTrace(true).GetFrame(1);
-            LogDetail(callInfo, ex.ToString());
+            LogDetail(GetLogFileName(), callInfo, ex.ToString());
+        }
+
+        /// <summary>
+        /// 在由logDateTime、logId指定的文件记录日志
+        /// </summary>
+        internal static void LogAtSpecifiedFile(string logPath, long logDateTime, int logId, string content)
+        {
+            var filePath = MakeLogFileName(logPath, logDateTime, logId);
+            var callInfo = new StackTrace(true).GetFrame(1);
+            LogDetail(filePath, callInfo, content);
         }
 
 
-        internal static LogResult ReadLog(string logPath, DateTime logDateTime, int logId, int fromLineNum)
+        internal static LogResult ReadLog(string logPath, long logDateTime, int logId, int fromLineNum)
         {
             var filePath = MakeLogFileName(logPath, logDateTime, logId);
             if (string.IsNullOrEmpty(filePath))
@@ -67,9 +78,8 @@ namespace XxlJob.Core.Executor
             return logResult;
         }
 
-        private static void LogDetail(StackFrame callInfo, string appendLog)
+        private static void LogDetail(string logFileName, StackFrame callInfo, string appendLog)
         {
-            var logFileName = GetLogFileName();
             if (string.IsNullOrEmpty(logFileName))
             {
                 return;
@@ -95,7 +105,7 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        internal static void SetLogFileName(string logPath, DateTime logDateTime, int logId)
+        internal static void SetLogFileName(string logPath, long logDateTime, int logId)
         {
             try
             {
@@ -126,10 +136,10 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        private static string MakeLogFileName(string logPath, DateTime logDateTime, int logId)
+        private static string MakeLogFileName(string logPath, long logDateTime, int logId)
         {
             //log fileName like: logPath/yyyy-MM-dd/9999.log
-            return Path.Combine(logPath, logDateTime.ToString("yyyy-MM-dd"), $"{logId}.log");
+            return Path.Combine(logPath, DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
         }
     }
 }

@@ -52,6 +52,15 @@ namespace XxlJob.Test
             Assert.Equal("nelson", CallContext.LogicalGetData("name"));
         }
 
+        [Fact]
+        public void JoinTest()
+        {
+            var thread = new Thread(() => { });
+            thread.Start();
+            Thread.Sleep(1000);
+            thread.Join();
+        }
+
         private void Run()
         {
             output.WriteLine(Guid.NewGuid().ToString());

@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace XxlJob.Core.Executor
@@ -12,11 +13,13 @@ namespace XxlJob.Core.Executor
     {
         private readonly JobExecutorConfig _executorConfig;
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();
+        private readonly Lazy<TriggerCallbackThread> _callbackThread;
         private readonly object _syncObject = new object();
 
         public JobThreadFactory(JobExecutorConfig executorConfig)
         {
             _executorConfig = executorConfig;
+            _callbackThread = new Lazy<TriggerCallbackThread>(CreateAndStartCallbackThread, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
 
@@ -84,8 +87,26 @@ namespace XxlJob.Core.Executor
         private JobThread CreateJobThread(int jobId)
         {
             var jobThread = new JobThread(jobId, _executorConfig);
+            jobThread.OnCallback += (sender, arg) =>
+            {
+                try
+                {
+                    _callbackThread.Value.PushCallBackParam(arg);
+                }
+                catch (Exception)
+                {
+                    //todo:log errro
+                }
+            };
             _jobThreads[jobId] = jobThread;
             return jobThread;
+        }
+
+        private TriggerCallbackThread CreateAndStartCallbackThread()
+        {
+            var thread = new TriggerCallbackThread(_executorConfig);
+            thread.Start();
+            return thread;
         }
     }
 }

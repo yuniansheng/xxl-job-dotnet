@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,217 +12,263 @@ namespace XxlJob.Core.Executor
 {
     internal class TriggerCallbackThread
     {
-        public static Lazy<TriggerCallbackThread> Instance = new Lazy<TriggerCallbackThread>(LazyThreadSafetyMode.ExecutionAndPublication);
-
-        public static void PushCallBack(HandleCallbackParam callback)
-        {
-            Instance.Value.callBackQueue.Enqueue(callback);
-        }
-
-
-        private ConcurrentQueue<HandleCallbackParam> callBackQueue = new ConcurrentQueue<HandleCallbackParam>();
-        private Thread triggerCallbackThread;
-        private Thread triggerRetryCallbackThread;
+        private readonly ConcurrentQueue<HandleCallbackParam> _callBackQueue = new ConcurrentQueue<HandleCallbackParam>();
+        private readonly JobExecutorConfig _executorConfig;
+        private readonly AutoResetEvent _queueHasDataEvent;
         private volatile bool toStop = false;
+        private Thread callbackThread;
+        private Thread retryThread;
+        private string _callbackSavePath;
+        private AdminClient _adminClient;
+
+        public TriggerCallbackThread(JobExecutorConfig executorConfig)
+        {
+            _executorConfig = executorConfig;
+            _queueHasDataEvent = new AutoResetEvent(false);
+        }
 
         public void Start()
         {
-            // valid
-            //if (XxlJobExecutor.getAdminBizList() == null)
-            //{
-            //    logger.warn(">>>>>>>>>>> xxl-job, executor callback config fail, adminAddresses is null.");
-            //    return;
-            //}
+            if (!_executorConfig.AdminAddresses.Any())
+            {
+                //logger.warn(">>>>>>>>>>> xxl-job, executor callback config fail, adminAddresses is null.");
+                toStop = true;
+                return;
+            }
 
-            triggerCallbackThread = new Thread(CallbackMethod);
-            triggerRetryCallbackThread = new Thread(RetryMethod);
+            _callbackSavePath = Path.Combine(_executorConfig.LogPath, "xxl-job-callback.log");
+            var dir = Path.GetDirectoryName(_callbackSavePath);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
 
-            triggerCallbackThread.Start();
-            triggerRetryCallbackThread.Start();
+            _adminClient = new AdminClient(_executorConfig);
+
+            callbackThread = new Thread(CallbackMethod);
+            retryThread = new Thread(RetryMethod);
+
+            callbackThread.Start();
+            retryThread.Start();
         }
 
-        public void ToStop()
+        public void Stop()
         {
             toStop = true;
-            // stop callback, interrupt and wait
-            triggerCallbackThread.Interrupt();
-            try
+
+            if (callbackThread != null)
             {
-                triggerCallbackThread.Join();
-            }
-            catch (ThreadInterruptedException ex)
-            {
-                //logger.error(e.getMessage(), ex);
+                // stop callback, interrupt and wait
+                callbackThread.Interrupt();
+                try
+                {
+                    callbackThread.Join();
+                }
+                catch (ThreadInterruptedException ex)
+                {
+                    //logger.error(e.getMessage(), ex);
+                }
             }
 
-            // stop retry, interrupt and wait
-            triggerRetryCallbackThread.Interrupt();
-            try
+            if (retryThread != null)
             {
-                triggerRetryCallbackThread.Join();
-            }
-            catch (ThreadInterruptedException ex)
-            {
-                //logger.error(e.getMessage(), ex);
+                // stop retry, interrupt and wait
+                retryThread.Interrupt();
+                try
+                {
+                    retryThread.Join();
+                }
+                catch (ThreadInterruptedException ex)
+                {
+                    //logger.error(e.getMessage(), ex);
+                }
             }
         }
+
+        public void PushCallBackParam(HandleCallbackParam callback)
+        {
+            if (!toStop)
+            {
+                _callBackQueue.Enqueue(callback);
+                _queueHasDataEvent.Set();
+            }
+            else
+            {
+                SaveCallbackParams(new List<HandleCallbackParam> { callback });
+            }
+        }
+
+
 
         private void CallbackMethod()
         {
-            //// normal callback
-            //while (!toStop)
-            //{
-            //    try
-            //    {
-            //        HandleCallbackParam callback = Instance.Value.callBackQueue.take();
-            //        if (callback != null)
-            //        {
+            try
+            {
+                // normal callback
+                while (!toStop)
+                {
+                    if (!ConsumeAndCallback())
+                    {
+                        _queueHasDataEvent.WaitOne();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // last callback
+                ConsumeAndCallback();
+            }
 
-            //            // callback list param
-            //            var callbackParamList = new List<HandleCallbackParam>();                        
-            //            int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
-            //            callbackParamList.add(callback);
-
-            //            // callback, will retry if error
-            //            if (callbackParamList != null && callbackParamList.size() > 0)
-            //            {
-            //                doCallback(callbackParamList);
-            //            }
-            //        }
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        //logger.error(e.getMessage(), e);
-            //    }
-            //}
-
-            //// last callback
-            //try
-            //{
-            //    List<HandleCallbackParam> callbackParamList = new ArrayList<HandleCallbackParam>();
-            //    int drainToNum = getInstance().callBackQueue.drainTo(callbackParamList);
-            //    if (callbackParamList != null && callbackParamList.size() > 0)
-            //    {
-            //        doCallback(callbackParamList);
-            //    }
-            //}
-            //catch (Exception e)
-            //{
-            //    //logger.error(e.getMessage(), e);
-            //}
-            ////logger.info(">>>>>>>>>>> xxl-job, executor callback thread destory.");
+            //logger.info(">>>>>>>>>>> xxl-job, executor callback thread destory.");
         }
+
+        /// <summary>
+        /// 从队列获取回调参数并执行回调
+        /// </summary>
+        /// <returns>如果本次执行方法未取到回调参数返回false，否则返回true</returns>
+        private bool ConsumeAndCallback()
+        {
+            var callbackParamList = new List<HandleCallbackParam>();
+            HandleCallbackParam callbackParam;
+            while (_callBackQueue.TryDequeue(out callbackParam))
+            {
+                callbackParamList.Add(callbackParam);
+            }
+
+            if (!callbackParamList.Any())
+            {
+                return false;
+            }
+
+            DoCallback(callbackParamList);
+            return true;
+        }
+
+        private void DoCallback(IEnumerable<HandleCallbackParam> callbackParamList)
+        {
+            try
+            {
+                var callbackResult = _adminClient.Callback(callbackParamList);
+                if (ReturnT.SUCCESS_CODE == callbackResult.code)
+                {
+                    LogCallbackResult(callbackParamList, "<br>----------- xxl-job job callback finish.");
+                    return;
+                }
+                else
+                {
+                    LogCallbackResult(callbackParamList, "<br>----------- xxl-job job callback fail, callbackResult:" + callbackResult);
+                }
+            }
+            catch (Exception ex)
+            {
+                //todo:log error
+                LogCallbackResult(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + ex.Message);
+            }
+
+            SaveCallbackParams(callbackParamList);
+        }
+
+
 
         private void RetryMethod()
         {
-            //while (!toStop)
-            //{
-            //    try
-            //    {
-            //        retryFailCallbackFile();
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        logger.error(e.getMessage(), e);
-            //    }
-            //    try
-            //    {
-            //        TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);
-            //    }
-            //    catch (InterruptedException e)
-            //    {
-            //        logger.warn(">>>>>>>>>>> xxl-job, executor retry callback thread interrupted, error msg:{}", e.getMessage());
-            //    }
-            //}
+            while (!toStop)
+            {
+                try
+                {
+                    DoRetry();
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                }
+                catch (ThreadInterruptedException ex)
+                {
+                    //logger.warn(">>>>>>>>>>> xxl-job, executor retry callback thread interrupted, error msg:{}", e.getMessage());
+                    break;
+                }
+                catch (Exception e)
+                {
+                    //logger.error(e.getMessage(), e);
+                }
+            }
+
             //logger.info(">>>>>>>>>>> xxl-job, executor retry callback thread destory.");
         }
 
-        private void doCallback(List<HandleCallbackParam> callbackParamList)
+        private void DoRetry()
         {
-            //boolean callbackRet = false;
-            //// callback, will retry if error
-            //for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList())
-            //{
-            //    try
-            //    {
-            //        ReturnT<String> callbackResult = adminBiz.callback(callbackParamList);
-            //        if (callbackResult != null && ReturnT.SUCCESS_CODE == callbackResult.getCode())
-            //        {
-            //            callbackLog(callbackParamList, "<br>----------- xxl-job job callback finish.");
-            //            callbackRet = true;
-            //            break;
-            //        }
-            //        else
-            //        {
-            //            callbackLog(callbackParamList, "<br>----------- xxl-job job callback fail, callbackResult:" + callbackResult);
-            //        }
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        callbackLog(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + e.getMessage());
-            //    }
-            //}
-            //if (!callbackRet)
-            //{
-            //    appendFailCallbackFile(callbackParamList);
-            //}
-        }
+            if (!File.Exists(_callbackSavePath))
+            {
+                return;
+            }
 
-        private void callbackLog(List<HandleCallbackParam> callbackParamList, String logContent)
-        {
-            //for (HandleCallbackParam callbackParam: callbackParamList)
-            //{
-            //    String logFileName = XxlJobFileAppender.makeLogFileName(new Date(callbackParam.getLogDateTim()), callbackParam.getLogId());
-            //    XxlJobFileAppender.contextHolder.set(logFileName);
-            //    XxlJobLogger.log(logContent);
-            //}
-        }
+            // load and clear file
+            var fileLines = File.ReadAllLines(_callbackSavePath);
+            File.Delete(_callbackSavePath);
 
-
-        /*
-    // ---------------------- fail-callback file ----------------------
-
-    private static String failCallbackFileName = XxlJobFileAppender.getLogPath().concat(File.separator).concat("xxl-job-callback").concat(".log");
-
-    private void appendFailCallbackFile(List<HandleCallbackParam> callbackParamList){
-        // append file
-        String content = JacksonUtil.writeValueAsString(callbackParamList);
-        FileUtil.appendFileLine(failCallbackFileName, content);
-    }
-
-    private void retryFailCallbackFile(){
-
-        // load and clear file
-        List<String> fileLines = FileUtil.loadFileLines(failCallbackFileName);
-        FileUtil.deleteFile(failCallbackFileName);
-
-        // parse
-        List<HandleCallbackParam> failCallbackParamList = new ArrayList<>();
-        if (fileLines!=null && fileLines.size()>0) {
-            for (String line: fileLines) {
-                List<HandleCallbackParam> failCallbackParamListTmp = JacksonUtil.readValue(line, List.class, HandleCallbackParam.class);
-                if (failCallbackParamListTmp!=null && failCallbackParamListTmp.size()>0) {
-                    failCallbackParamList.addAll(failCallbackParamListTmp);
+            // retry callback, 100 lines per page
+            var failCallbackParamList = new List<HandleCallbackParam>();
+            for (int i = 0; i < fileLines.Length; i++)
+            {
+                var item = DeserializeHandleCallbackParam(fileLines[i]);
+                failCallbackParamList.Add(item);
+                if (failCallbackParamList.Count == 100 || i == fileLines.Length - 1)
+                {
+                    DoCallback(failCallbackParamList);
+                    failCallbackParamList.Clear();
                 }
             }
         }
 
-        // retry callback, 100 lines per page
-        if (failCallbackParamList!=null && failCallbackParamList.size()>0) {
-            int pagesize = 100;
-            List<HandleCallbackParam> pageData = new ArrayList<>();
-            for (int i = 0; i < failCallbackParamList.size(); i++) {
-                pageData.add(failCallbackParamList.get(i));
-                if (i>0 && i%pagesize == 0) {
-                    doCallback(pageData);
-                    pageData.clear();
-                }
-            }
-            if (pageData.size() > 0) {
-                doCallback(pageData);
+
+
+        private void LogCallbackResult(IEnumerable<HandleCallbackParam> callbackParamList, string logContent)
+        {
+            foreach (var param in callbackParamList)
+            {
+                JobLogger.LogAtSpecifiedFile(_executorConfig.LogPath, param.logDateTim, param.logId, logContent);
             }
         }
-    }
-    */
+
+        private void SaveCallbackParams(IEnumerable<HandleCallbackParam> callbackParamList)
+        {
+            if (!callbackParamList.Any())
+            {
+                return;
+            }
+
+            var builder = new StringBuilder();
+            foreach (var item in callbackParamList)
+            {
+                try
+                {
+                    var line = SerializeHandleCallbackParam(item);
+                    builder.AppendLine(line);
+                }
+                catch (Exception)
+                {
+                    //todo:log error
+                }
+            }
+            if (builder.Length > 0)
+            {
+                try
+                {
+                    File.AppendAllText(_callbackSavePath, builder.ToString());
+                }
+                catch (Exception)
+                {
+                    //todo:log error
+                }
+            }
+        }
+
+        private string SerializeHandleCallbackParam(HandleCallbackParam param)
+        {
+            throw new NotImplementedException();
+        }
+
+        private HandleCallbackParam DeserializeHandleCallbackParam(string content)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -23,6 +23,8 @@ namespace XxlJob.Core.Executor
         private volatile bool _toStop = false;
         private string _stopReason;
 
+        public event EventHandler<HandleCallbackParam> OnCallback;
+
         public bool Stopped { get { return _toStop; } }
 
         public JobThread(int jobId, JobExecutorConfig executorConfig)
@@ -94,7 +96,7 @@ namespace XxlJob.Core.Executor
                         _running = true;
                         byte temp;
                         _triggerLogIdSet.TryRemove(triggerParam.logId, out temp);
-                        JobLogger.SetLogFileName(_executorConfig.LogPath, triggerParam.LogDataTime, triggerParam.logId);
+                        JobLogger.SetLogFileName(_executorConfig.LogPath, triggerParam.logDateTim, triggerParam.logId);
                         var executionContext = new JobExecutionContext()
                         {
                             BroadcastIndex = triggerParam.broadcastIndex,
@@ -146,7 +148,7 @@ namespace XxlJob.Core.Executor
                 {
                     if (executeResult != null)
                     {
-                        //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), executeResult));
+                        OnCallback?.Invoke(this, new HandleCallbackParam(triggerParam.logId, triggerParam.logDateTim, executeResult));
                     }
                 }
             }
@@ -157,7 +159,7 @@ namespace XxlJob.Core.Executor
             while (_triggerQueue.TryDequeue(out triggerParam))
             {
                 var stopResult = ReturnT.CreateFailedResult(_stopReason + " [job not executed, in the job queue, killed.]");
-                //TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTim(), stopResult));
+                OnCallback?.Invoke(this, new HandleCallbackParam(triggerParam.logId, triggerParam.logDateTim, stopResult));
             }
         }
     }
