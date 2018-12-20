@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Executor\AdminClient.cs" />
+    <Compile Include="Executor\HandleCallbackParamRepository.cs" />
     <Compile Include="Executor\JobExecutionContext.cs" />
     <Compile Include="Executor\JobHandlerFactory.cs" />
     <Compile Include="Executor\JobLogger.cs" />

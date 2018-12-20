@@ -18,8 +18,9 @@ namespace XxlJob.Core.Executor
         private volatile bool toStop = false;
         private Thread callbackThread;
         private Thread retryThread;
-        private string _callbackSavePath;
+
         private AdminClient _adminClient;
+        private HandleCallbackParamRepository _paramRepository;
 
         public TriggerCallbackThread(JobExecutorConfig executorConfig)
         {
@@ -29,21 +30,14 @@ namespace XxlJob.Core.Executor
 
         public void Start()
         {
-            if (!_executorConfig.AdminAddresses.Any())
+            _adminClient = new AdminClient(_executorConfig);
+            if (!_adminClient.IsAdminAccessable)
             {
-                //logger.warn(">>>>>>>>>>> xxl-job, executor callback config fail, adminAddresses is null.");
+                //logger.warn(">>>>>>>>>>> xxl-job, executor callback config fail, adminAddresses is not accessable.");
                 toStop = true;
                 return;
             }
-
-            _callbackSavePath = Path.Combine(_executorConfig.LogPath, "xxl-job-callback.log");
-            var dir = Path.GetDirectoryName(_callbackSavePath);
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            _adminClient = new AdminClient(_executorConfig);
+            _paramRepository = new HandleCallbackParamRepository(_executorConfig);
 
             callbackThread = new Thread(CallbackMethod);
             retryThread = new Thread(RetryMethod);
@@ -94,7 +88,7 @@ namespace XxlJob.Core.Executor
             }
             else
             {
-                SaveCallbackParams(new List<HandleCallbackParam> { callback });
+                _paramRepository.SaveCallbackParams(new List<HandleCallbackParam> { callback });
             }
         }
 
@@ -165,7 +159,15 @@ namespace XxlJob.Core.Executor
                 LogCallbackResult(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + ex.Message);
             }
 
-            SaveCallbackParams(callbackParamList);
+            _paramRepository.SaveCallbackParams(callbackParamList);
+        }
+
+        private void LogCallbackResult(IEnumerable<HandleCallbackParam> callbackParamList, string logContent)
+        {
+            foreach (var param in callbackParamList)
+            {
+                JobLogger.LogAtSpecifiedFile(_executorConfig.LogPath, param.logDateTim, param.logId, logContent);
+            }
         }
 
 
@@ -195,80 +197,16 @@ namespace XxlJob.Core.Executor
 
         private void DoRetry()
         {
-            if (!File.Exists(_callbackSavePath))
-            {
-                return;
-            }
-
-            // load and clear file
-            var fileLines = File.ReadAllLines(_callbackSavePath);
-            File.Delete(_callbackSavePath);
-
             // retry callback, 100 lines per page
-            var failCallbackParamList = new List<HandleCallbackParam>();
-            for (int i = 0; i < fileLines.Length; i++)
+            var failCallbackParamList = _paramRepository.LoadCallbackParams();
+            int currentIndex = 0;
+            while (currentIndex < failCallbackParamList.Count)
             {
-                var item = DeserializeHandleCallbackParam(fileLines[i]);
-                failCallbackParamList.Add(item);
-                if (failCallbackParamList.Count == 100 || i == fileLines.Length - 1)
-                {
-                    DoCallback(failCallbackParamList);
-                    failCallbackParamList.Clear();
-                }
+                var count = Math.Min(100, failCallbackParamList.Count - currentIndex);
+                var page = failCallbackParamList.GetRange(currentIndex, count);
+                DoCallback(failCallbackParamList);
+                currentIndex += count;
             }
-        }
-
-
-
-        private void LogCallbackResult(IEnumerable<HandleCallbackParam> callbackParamList, string logContent)
-        {
-            foreach (var param in callbackParamList)
-            {
-                JobLogger.LogAtSpecifiedFile(_executorConfig.LogPath, param.logDateTim, param.logId, logContent);
-            }
-        }
-
-        private void SaveCallbackParams(IEnumerable<HandleCallbackParam> callbackParamList)
-        {
-            if (!callbackParamList.Any())
-            {
-                return;
-            }
-
-            var builder = new StringBuilder();
-            foreach (var item in callbackParamList)
-            {
-                try
-                {
-                    var line = SerializeHandleCallbackParam(item);
-                    builder.AppendLine(line);
-                }
-                catch (Exception)
-                {
-                    //todo:log error
-                }
-            }
-            if (builder.Length > 0)
-            {
-                try
-                {
-                    File.AppendAllText(_callbackSavePath, builder.ToString());
-                }
-                catch (Exception)
-                {
-                    //todo:log error
-                }
-            }
-        }
-
-        private string SerializeHandleCallbackParam(HandleCallbackParam param)
-        {
-            throw new NotImplementedException();
-        }
-
-        private HandleCallbackParam DeserializeHandleCallbackParam(string content)
-        {
-            throw new NotImplementedException();
         }
     }
 }
