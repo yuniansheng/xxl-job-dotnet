@@ -21,6 +21,8 @@ namespace SampleWeb
         {
             config.EnableXxlJob(jobConfig =>
             {
+                jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
+                jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
                 //jobConfig.AccessToken = "test invalid token";
             });
         }
@@ -78,8 +80,7 @@ namespace SampleWeb
     {
         public override ReturnT Execute(JobExecutionContext context)
         {
-            File.AppendAllText(@"D:\job.txt", $"{DateTime.Now.ToString("O")} execute job" + Environment.NewLine);
-            return ReturnT.SUCCESS;
+            return ReturnT.CreateSucceededResult("测试job执行成功了!");
         }
     }
 }

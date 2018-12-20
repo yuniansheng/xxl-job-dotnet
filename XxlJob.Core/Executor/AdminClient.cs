@@ -53,7 +53,7 @@ namespace XxlJob.Core.Executor
 
                 var content = new ByteArrayContent(ms.ToArray());
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                var postTask = client.PostAsync("http://172.18.21.144:8080/xxl-job-admin/api", content);
+                var postTask = client.PostAsync(RouteAddress(), content);
                 var responseStream = postTask.Result.Content.ReadAsStreamAsync().Result;
                 var rpcResponse = (RpcResponse)new CHessianInput(responseStream).ReadObject();
 
@@ -70,6 +70,15 @@ namespace XxlJob.Core.Executor
                     return rpcResponse.result as ReturnT;
                 }
             }
+        }
+
+        private string RouteAddress()
+        {
+
+            var address = _jobExecutorConfig.AdminAddresses.FirstOrDefault();
+            if (string.IsNullOrEmpty(address))
+                return null;
+            return address + "/api";
         }
     }
 }
