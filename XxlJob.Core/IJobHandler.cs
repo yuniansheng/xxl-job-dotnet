@@ -9,18 +9,6 @@ namespace XxlJob.Core
 {
     public abstract class IJobHandler
     {
-        public static readonly ReturnT SUCCESS = new ReturnT(200, null);
-
-        public static readonly ReturnT FAIL = new ReturnT(500, null);
-
-        public static readonly ReturnT FAIL_TIMEOUT = new ReturnT(502, null);
-
-
-
         public abstract ReturnT Execute(JobExecutionContext context);
-
-        public virtual void Init() { }
-
-        public virtual void Destroy() { }
     }
 }

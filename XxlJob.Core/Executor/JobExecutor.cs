@@ -88,16 +88,6 @@ namespace XxlJob.Core.Executor
         {
         }
 
-        public void Destroy()
-        {
-            // destory jobThreadRepository
-            //foreach (var entry in jobThreadRepository)
-            //{
-            //    RemoveJobThread(entry.Key, "web container destroy and kill the job.");
-            //}
-            //_jobThreadFactory.Clear();
-        }
-
 
         private ReturnT Beat()
         {

@@ -13,6 +13,7 @@ namespace com.xxl.job.core.biz.model
 
         public static readonly ReturnT SUCCESS = new ReturnT(SUCCESS_CODE, null);
         public static readonly ReturnT FAIL = new ReturnT(FAIL_CODE, null);
+        public static readonly ReturnT FAIL_TIMEOUT = new ReturnT(502, null);
 
         public int code;
         public string msg;

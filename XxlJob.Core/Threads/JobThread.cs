@@ -107,18 +107,11 @@ namespace XxlJob.Core.Threads
                         JobLogger.Log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.executorParams);
 
                         var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
-                        if (triggerParam.executorTimeout > 0)
-                        {
-                            executeResult = handler.Execute(executionContext);
-                        }
-                        else
-                        {
-                            executeResult = handler.Execute(executionContext);
-                        }
+                        executeResult = handler.Execute(executionContext);
 
                         if (executeResult == null)
                         {
-                            executeResult = IJobHandler.FAIL;
+                            executeResult = ReturnT.FAIL;
                         }
                         JobLogger.Log("<br>----------- xxl-job job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
                     }
