@@ -29,10 +29,10 @@ namespace XxlJob.Core.Executor
         public ReturnT Callback(IEnumerable<HandleCallbackParam> callbackParamList)
         {
             var paramTypes = new List<string>() { "java.util.List" };
-            return InvokeService(MethodBase.GetCurrentMethod(), paramTypes, callbackParamList);
+            return InvokeService(MethodBase.GetCurrentMethod(), paramTypes, callbackParamList).Result;
         }
 
-        public ReturnT InvokeService(MethodBase method, List<string> paramTypes, params object[] parameters)
+        public async Task<ReturnT> InvokeService(MethodBase method, List<string> paramTypes, params object[] parameters)
         {
             var methodName = method.Name.Substring(0, 1).ToLower() + method.Name.Substring(1);
             var request = new RpcRequest()
@@ -53,8 +53,8 @@ namespace XxlJob.Core.Executor
 
                 var content = new ByteArrayContent(ms.ToArray());
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                var postTask = client.PostAsync(RouteAddress(), content);
-                var responseStream = postTask.Result.Content.ReadAsStreamAsync().Result;
+                var responseMessage = await client.PostAsync(RouteAddress(), content);
+                var responseStream = await responseMessage.Content.ReadAsStreamAsync();
                 var rpcResponse = (RpcResponse)new CHessianInput(responseStream).ReadObject();
 
                 if (rpcResponse == null)
