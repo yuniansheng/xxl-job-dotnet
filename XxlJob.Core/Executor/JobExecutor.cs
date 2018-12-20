@@ -31,7 +31,7 @@ namespace XxlJob.Core.Executor
             var rpcResponse = new RpcResponse();
             if (rpcRequest == null)
             {
-                rpcResponse.errorMsg = "The request is not valid.";
+                rpcResponse.error = "The request is not valid.";
             }
             else
             {
@@ -50,7 +50,7 @@ namespace XxlJob.Core.Executor
         {
             if (rpcRequest.className != "com.xxl.job.core.biz.ExecutorBiz")
             {
-                rpcResponse.errorMsg = "The request is not a xxl-job request.";
+                rpcResponse.error = "The request is not a xxl-job request.";
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace XxlJob.Core.Executor
 
             if (!string.IsNullOrEmpty(_config.AccessToken) && _config.AccessToken != rpcRequest.accessToken)
             {
-                rpcResponse.errorMsg = "The access token[" + rpcRequest.accessToken + "] is wrong.";
+                rpcResponse.error = "The access token[" + rpcRequest.accessToken + "] is wrong.";
                 return;
             }
 
@@ -73,15 +73,15 @@ namespace XxlJob.Core.Executor
                 var method = type.GetMethod(rpcRequest.methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
                 if (method == null)
                 {
-                    rpcResponse.errorMsg = "The method[" + rpcRequest.methodName + "] not found.";
+                    rpcResponse.error = "The method[" + rpcRequest.methodName + "] not found.";
                     return;
                 }
-                var result = method.Invoke(this, rpcRequest.parameters);
+                var result = method.Invoke(this, rpcRequest.parameters.ToArray());
                 rpcResponse.result = result;
             }
             catch (Exception ex)
             {
-                rpcResponse.errorMsg = ex.ToString();
+                rpcResponse.error = ex.ToString();
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using com.xxl.job.core.biz.model;
 using com.xxl.job.core.rpc.codec;
 using hessiancsharp.io;
+using java.lang;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace XxlJob.Test
             Assert.Null(request.requestId);
             Assert.Null(request.version);
 
-            Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", (request.parameterTypes[0] as Hashtable)["name"]);
+            Assert.Equal("com.xxl.job.core.biz.model.TriggerParam", (request.parameterTypes[0] as Class).name);
 
             var parameter1 = request.parameters[0] as TriggerParam;
             Assert.Equal(294, parameter1.logId);
@@ -89,6 +90,8 @@ namespace XxlJob.Test
             Assert.Equal("cdaff813abf02ffe06be0469b3f3ef43", request.accessToken);
             Assert.Equal("com.xxl.job.core.biz.AdminBiz", request.className);
             Assert.Equal("callback", request.methodName);
+
+            Assert.Equal("java.util.List", (request.parameterTypes[0] as Class).name);
 
             var callback = (request.parameters[0] as ArrayList)[0] as HandleCallbackParam;
             Assert.Equal(2038, callback.logId);

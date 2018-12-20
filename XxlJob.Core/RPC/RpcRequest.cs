@@ -16,8 +16,8 @@ namespace com.xxl.job.core.rpc.codec
 
         public string className;
         public string methodName;
-        public object[] parameterTypes;
-        public object[] parameters;
+        public ArrayList parameterTypes;
+        public ArrayList parameters;
 
         public string version;
     }
