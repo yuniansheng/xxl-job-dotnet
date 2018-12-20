@@ -20,10 +20,24 @@ namespace XxlJob.Core.Executor
     public class AdminClient
     {
         private readonly JobExecutorConfig _jobExecutorConfig;
+        private readonly HttpClient _client;
+        private List<AddressEntry> _addresses;
+        private int _currentAdminIndex;
+
+        public bool IsAdminAccessable
+        {
+            get
+            {
+                return _addresses.Any();
+            }
+        }
 
         public AdminClient(JobExecutorConfig jobExecutorConfig)
         {
             _jobExecutorConfig = jobExecutorConfig;
+            _client = new HttpClient();
+            _client.Timeout = TimeSpan.FromSeconds(30);
+            InitAddress();
         }
 
         public ReturnT Callback(IEnumerable<HandleCallbackParam> callbackParamList)
@@ -45,18 +59,36 @@ namespace XxlJob.Core.Executor
                 parameters = new ArrayList(parameters)
             };
 
-            using (var client = new HttpClient())
+            var ms = new MemoryStream();
+            var serializer = new CHessianOutput(ms);
+            serializer.WriteObject(request);
+            var content = new ByteArrayContent(ms.ToArray());
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+            int triedTimes = 0;
+            while (triedTimes++ < _addresses.Count)
             {
-                var ms = new MemoryStream();
-                var serializer = new CHessianOutput(ms);
-                serializer.WriteObject(request);
+                var item = _addresses[_currentAdminIndex];
+                _currentAdminIndex = (_currentAdminIndex + 1) % _addresses.Count;
+                if (!item.CheckAccessable())
+                    continue;
 
-                var content = new ByteArrayContent(ms.ToArray());
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                var responseMessage = await client.PostAsync(RouteAddress(), content);
-                var responseStream = await responseMessage.Content.ReadAsStreamAsync();
+                Stream responseStream;
+                try
+                {
+                    var responseMessage = await _client.PostAsync(item.RequestUri, content);
+                    responseMessage.EnsureSuccessStatusCode();
+                    responseStream = await responseMessage.Content.ReadAsStreamAsync();
+                    item.Reset();
+                }
+                catch (Exception)
+                {
+                    //todo:log error
+                    item.SetFail();
+                    continue;
+                }
+
                 var rpcResponse = (RpcResponse)new CHessianInput(responseStream).ReadObject();
-
                 if (rpcResponse == null)
                 {
                     throw new Exception("xxl-rpc response not found.");
@@ -70,15 +102,61 @@ namespace XxlJob.Core.Executor
                     return rpcResponse.result as ReturnT;
                 }
             }
+
+            throw new Exception("xxl-rpc server address not accessable.");
         }
 
-        private string RouteAddress()
+        private void InitAddress()
         {
+            _addresses = new List<AddressEntry>();
+            foreach (var item in _jobExecutorConfig.AdminAddresses)
+            {
+                try
+                {
+                    var uri = new Uri(item + "/api");
+                    var entry = new AddressEntry { RequestUri = uri };
+                    _addresses.Add(entry);
+                }
+                catch (Exception)
+                {
+                    //todo:log error                    
+                }
+            }
+        }
+    }
 
-            var address = _jobExecutorConfig.AdminAddresses.FirstOrDefault();
-            if (string.IsNullOrEmpty(address))
-                return null;
-            return address + "/api";
+    internal class AddressEntry
+    {
+        public Uri RequestUri { get; set; }
+
+        public DateTime? LastFailedTime { get; private set; }
+
+        public int FailedTimes { get; private set; }
+
+        public bool CheckAccessable()
+        {
+            if (LastFailedTime == null)
+                return true;
+
+            if (DateTime.UtcNow.Subtract(LastFailedTime.Value).TotalMinutes > 1)
+                return true;
+
+            if (FailedTimes < 5)
+                return true;
+
+            return false;
+        }
+
+        public void Reset()
+        {
+            LastFailedTime = null;
+            FailedTimes = 0;
+        }
+
+        public void SetFail()
+        {
+            LastFailedTime = DateTime.UtcNow;
+            FailedTimes++;
         }
     }
 }
