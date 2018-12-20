@@ -258,6 +258,10 @@
       <Project>{a34a2db9-77a3-43af-852d-9e4e1f0f8887}</Project>
       <Name>XxlJob.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\XxlJob.WebApiHost\XxlJob.WebApiHost.csproj">
+      <Project>{f36395f9-fcdc-4d98-89c9-5a9b094f2e80}</Project>
+      <Name>XxlJob.WebApiHost</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

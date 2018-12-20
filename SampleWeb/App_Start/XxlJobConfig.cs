@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using System.Web.Routing;
 using com.xxl.job.core.biz.model;
 using XxlJob.Core;
-using XxlJob.Core.Executor;
+using XxlJob.WebApiHost;
 
 namespace SampleWeb
 {
@@ -25,64 +20,7 @@ namespace SampleWeb
             {
                 jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
                 jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
-                //jobConfig.AccessToken = "test invalid token";
             });
-        }
-    }
-
-
-
-    public static class HttpConfigurationExtensions
-    {
-        private static readonly string DefaultListenPath = string.Empty;
-
-
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, Action<JobExecutorConfig> configure = null)
-        {
-            EnableXxlJob(httpConfiguration, DefaultListenPath, configure);
-        }
-
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, string listenPath, Action<JobExecutorConfig> configure = null)
-        {
-            var jobConfig = new JobExecutorConfig();
-            configure?.Invoke(jobConfig);
-
-            httpConfiguration.Routes.MapHttpRoute(
-                name: "xxl-job",
-                routeTemplate: listenPath,
-                defaults: null,
-                constraints: new { isXxlJob = new XxlJobConstraint() },
-                handler: new XxlJobExecutorHandler(jobConfig)
-            );
-        }
-    }
-
-    public class XxlJobConstraint : IRouteConstraint
-    {
-        public bool Match(HttpContextBase httpContext, Route route, string parameterName, RouteValueDictionary values, RouteDirection routeDirection)
-        {
-            return httpContext.Request.ContentType == "application/octet-stream";
-        }
-    }
-
-    public class XxlJobExecutorHandler : HttpMessageHandler
-    {
-        private readonly JobExecutor _executor;
-
-        public XxlJobExecutorHandler(JobExecutorConfig config)
-        {
-            _executor = new JobExecutor(config);
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var inputStream = request.Content.ReadAsStreamAsync().Result;
-            byte[] responseBytes = _executor.HandleRequest(inputStream);
-
-            var response = request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new ByteArrayContent(responseBytes);
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html") { CharSet = "UTF-8" };
-            return Task.FromResult(response);
         }
     }
 

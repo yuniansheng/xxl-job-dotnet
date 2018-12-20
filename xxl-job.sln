@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleWeb", "SampleWeb\Samp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XxlJob.Test", "XxlJob.Test\XxlJob.Test.csproj", "{4BD9E8D8-C9AD-4DB4-B3D5-E58E7574581F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XxlJob.WebApiHost", "XxlJob.WebApiHost\XxlJob.WebApiHost.csproj", "{F36395F9-FCDC-4D98-89C9-5A9B094F2E80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{4BD9E8D8-C9AD-4DB4-B3D5-E58E7574581F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BD9E8D8-C9AD-4DB4-B3D5-E58E7574581F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BD9E8D8-C9AD-4DB4-B3D5-E58E7574581F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F36395F9-FCDC-4D98-89C9-5A9B094F2E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F36395F9-FCDC-4D98-89C9-5A9B094F2E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F36395F9-FCDC-4D98-89C9-5A9B094F2E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F36395F9-FCDC-4D98-89C9-5A9B094F2E80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
