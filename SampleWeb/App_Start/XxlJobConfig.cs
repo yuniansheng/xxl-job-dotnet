@@ -80,7 +80,7 @@ namespace SampleWeb
     {
         public override ReturnT Execute(JobExecutionContext context)
         {
-            return ReturnT.CreateSucceededResult("测试job执行成功了!");
+            return ReturnT.CreateSucceededResult("测试job执行成功了!" + Environment.NewLine + "测试多行日志", "执行返回的内容");
         }
     }
 }

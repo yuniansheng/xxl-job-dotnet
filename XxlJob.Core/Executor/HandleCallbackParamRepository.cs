@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ namespace XxlJob.Core.Executor
     {
         private readonly JobExecutorConfig _executorConfig;
         private string _callbackSavePath;
+        private JsonSerializer _jsonSerializer;
 
         public HandleCallbackParamRepository(JobExecutorConfig executorConfig)
         {
@@ -23,6 +25,8 @@ namespace XxlJob.Core.Executor
             {
                 Directory.CreateDirectory(dir);
             }
+
+            _jsonSerializer = JsonSerializer.Create();
         }
 
 
@@ -33,29 +37,20 @@ namespace XxlJob.Core.Executor
                 return;
             }
 
-            var builder = new StringBuilder();
-            foreach (var item in callbackParamList)
+            try
             {
-                try
+                using (var writer = new StreamWriter(_callbackSavePath, true, Encoding.UTF8))
                 {
-                    var line = SerializeHandleCallbackParam(item);
-                    builder.AppendLine(line);
-                }
-                catch (Exception)
-                {
-                    //todo:log error
+                    foreach (var item in callbackParamList)
+                    {
+                        _jsonSerializer.Serialize(writer, item);
+                        writer.WriteLine();
+                    }
                 }
             }
-            if (builder.Length > 0)
+            catch (Exception)
             {
-                try
-                {
-                    File.AppendAllText(_callbackSavePath, builder.ToString());
-                }
-                catch (Exception)
-                {
-                    //todo:log error
-                }
+                //todo:log error
             }
         }
 
@@ -74,26 +69,17 @@ namespace XxlJob.Core.Executor
 
             for (int i = 0; i < fileLines.Length; i++)
             {
-                var item = DeserializeHandleCallbackParam(fileLines[i]);
-                failCallbackParamList.Add(item);
-                //if (failCallbackParamList.Count == 100 || i == fileLines.Length - 1)
-                //{
-                //    DoCallback(failCallbackParamList);
-                //    failCallbackParamList.Clear();
-                //}
+                try
+                {
+                    var item = JsonConvert.DeserializeObject<HandleCallbackParam>(fileLines[i]);
+                    failCallbackParamList.Add(item);
+                }
+                catch (Exception)
+                {
+                    //todo:log error                    
+                }
             }
             return failCallbackParamList;
-        }
-
-
-        private string SerializeHandleCallbackParam(HandleCallbackParam param)
-        {
-            throw new NotImplementedException();
-        }
-
-        private HandleCallbackParam DeserializeHandleCallbackParam(string content)
-        {
-            throw new NotImplementedException();
         }
     }
 }
