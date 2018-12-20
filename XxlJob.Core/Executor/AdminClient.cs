@@ -17,7 +17,7 @@ using XxlJob.Core.Util;
 
 namespace XxlJob.Core.Executor
 {
-    public class AdminClient
+    internal class AdminClient
     {
         private readonly JobExecutorConfig _jobExecutorConfig;
         private readonly HttpClient _client;
