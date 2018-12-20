@@ -97,7 +97,7 @@ namespace XxlJob.Core.Executor
 
             try
             {
-                File.AppendAllText(logFileName, formatAppendLog);
+                File.AppendAllText(logFileName, formatAppendLog, Encoding.UTF8);
             }
             catch (Exception)
             {
@@ -138,8 +138,8 @@ namespace XxlJob.Core.Executor
 
         private static string MakeLogFileName(string logPath, long logDateTime, int logId)
         {
-            //log fileName like: logPath/yyyy-MM-dd/9999.log
-            return Path.Combine(logPath, DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
+            //log fileName like: logPath/HandlerLogs/yyyy-MM-dd/9999.log
+            return Path.Combine(logPath, "HandlerLogs", DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
         }
     }
 }

@@ -13,7 +13,7 @@ namespace XxlJob.Core
         public JobExecutorConfig()
         {
             JobHandlerFactory = new DefaultJobHandlerFactory();
-            LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "xxl-job", "JobHandlerLogs");
+            LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "xxl-job-logs");
             AdminAddresses = new List<string>();
         }
 
