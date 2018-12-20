@@ -8,7 +8,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
+using System.Web.Routing;
 using com.xxl.job.core.biz.model;
 using XxlJob.Core;
 using XxlJob.Core.Executor;
@@ -32,7 +34,7 @@ namespace SampleWeb
 
     public static class HttpConfigurationExtensions
     {
-        private static readonly string DefaultListenPath = "job";
+        private static readonly string DefaultListenPath = string.Empty;
 
 
         public static void EnableXxlJob(this HttpConfiguration httpConfiguration, Action<JobExecutorConfig> configure = null)
@@ -49,9 +51,17 @@ namespace SampleWeb
                 name: "xxl-job",
                 routeTemplate: listenPath,
                 defaults: null,
-                constraints: null,
+                constraints: new { isXxlJob = new XxlJobConstraint() },
                 handler: new XxlJobExecutorHandler(jobConfig)
             );
+        }
+    }
+
+    public class XxlJobConstraint : IRouteConstraint
+    {
+        public bool Match(HttpContextBase httpContext, Route route, string parameterName, RouteValueDictionary values, RouteDirection routeDirection)
+        {
+            return httpContext.Request.ContentType == "application/octet-stream";
         }
     }
 
