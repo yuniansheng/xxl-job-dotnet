@@ -7,8 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using XxlJob.Core.Executor;
 
-namespace XxlJob.Core.Executor
+namespace XxlJob.Core.Threads
 {
     internal class TriggerCallbackThread
     {

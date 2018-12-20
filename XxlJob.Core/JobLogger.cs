@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using XxlJob.Core.Util;
 
-namespace XxlJob.Core.Executor
+namespace XxlJob.Core
 {
     public static class JobLogger
     {

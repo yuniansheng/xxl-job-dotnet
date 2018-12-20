@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using XxlJob.Core.Threads;
 
 namespace XxlJob.Core.Executor
 {
-    public class JobThreadFactory
+    internal class JobThreadFactory
     {
         private readonly JobExecutorConfig _executorConfig;
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();

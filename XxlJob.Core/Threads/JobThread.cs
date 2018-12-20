@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace XxlJob.Core.Executor
+namespace XxlJob.Core.Threads
 {
-    public class JobThread
+    internal class JobThread
     {
         private readonly int _jobId;
         private readonly JobExecutorConfig _executorConfig;

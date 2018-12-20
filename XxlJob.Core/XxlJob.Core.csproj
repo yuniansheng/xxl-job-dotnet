@@ -48,16 +48,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Executor\AdminClient.cs" />
+    <Compile Include="Executor\DefaultJobHandlerFactory.cs" />
     <Compile Include="Executor\HandleCallbackParamRepository.cs" />
-    <Compile Include="Executor\JobExecutionContext.cs" />
-    <Compile Include="Executor\JobHandlerFactory.cs" />
-    <Compile Include="Executor\JobLogger.cs" />
+    <Compile Include="JobExecutionContext.cs" />
+    <Compile Include="JobHandlerFactory.cs" />
+    <Compile Include="JobLogger.cs" />
     <Compile Include="Executor\JobThreadFactory.cs" />
     <Compile Include="Executor\JobExecutor.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Executor\IJobHandler.cs" />
-    <Compile Include="Executor\JobThread.cs" />
-    <Compile Include="Executor\TriggerCallbackThread.cs" />
+    <Compile Include="IJobHandler.cs" />
+    <Compile Include="Threads\JobThread.cs" />
+    <Compile Include="Threads\TriggerCallbackThread.cs" />
     <Compile Include="Model\Class.cs" />
     <Compile Include="Model\LogResult.cs" />
     <Compile Include="Model\ReturnT.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="RPC\RpcRequest.cs" />
     <Compile Include="RPC\RpcResponse.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
-    <Compile Include="Executor\JobExecutorConfig.cs" />
+    <Compile Include="JobExecutorConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

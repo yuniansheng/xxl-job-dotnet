@@ -6,15 +6,10 @@ using System.Threading.Tasks;
 
 namespace XxlJob.Core.Executor
 {
-    public abstract class JobHandlerFactory
-    {
-        public abstract IJobHandler GetJobHandler(string handlerName);
-    }
-
     /// <summary>
     /// 默认JobHandlerFactory，初次运行job时查找所有继承自IJobHandler的类并实例化，后续job执行共享之前创建的实例
     /// </summary>
-    public class DefaultJobHandlerFactory : JobHandlerFactory
+    internal class DefaultJobHandlerFactory : JobHandlerFactory
     {
         private readonly Lazy<Dictionary<string, IJobHandler>> _handlers;
 

@@ -8,8 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using XxlJob.Core.Executor;
-using XxlJob.Core.Util;
+using XxlJob.Core.Threads;
 
 namespace XxlJob.Core.Executor
 {
