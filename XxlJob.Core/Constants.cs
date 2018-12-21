@@ -8,6 +8,12 @@ namespace XxlJob.Core
 {
     internal static class Constants
     {
+        public const int MAX_CALLBACK_RETRY_TIMES = 10;
+
+        public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(10);
+
+        public static TimeSpan JobThreadWaitTime = TimeSpan.FromSeconds(90);
+
         public static class GlueType
         {
             public const string BEAN = "BEAN";

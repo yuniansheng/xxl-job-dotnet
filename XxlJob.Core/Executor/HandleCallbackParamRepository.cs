@@ -43,8 +43,16 @@ namespace XxlJob.Core.Executor
                 {
                     foreach (var item in callbackParamList)
                     {
-                        _jsonSerializer.Serialize(writer, item);
-                        writer.WriteLine();
+                        if (item.callbackRetryTimes >= Constants.MAX_CALLBACK_RETRY_TIMES)
+                        {
+                            //todo:记录日志并丢弃,防止重复写入文件导致文件过大
+                        }
+                        else
+                        {
+                            item.callbackRetryTimes++;
+                            _jsonSerializer.Serialize(writer, item);
+                            writer.WriteLine();
+                        }
                     }
                 }
             }

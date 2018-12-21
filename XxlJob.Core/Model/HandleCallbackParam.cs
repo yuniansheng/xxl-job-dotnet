@@ -18,6 +18,11 @@ namespace com.xxl.job.core.biz.model
             this.executeResult = executeResult;
         }
 
+        /// <summary>
+        /// 回调重试次数,限制重试使用的,调度中心并不需要此字段
+        /// </summary>
+        public int callbackRetryTimes;
+
         public int logId;
 
         public long logDateTim;

@@ -180,7 +180,7 @@ namespace XxlJob.Core.Threads
                 try
                 {
                     DoRetry();
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                    Thread.Sleep(Constants.CallbackRetryInterval);
                 }
                 catch (ThreadInterruptedException ex)
                 {

@@ -119,7 +119,7 @@ namespace XxlJob.Core.Threads
                     {
                         try
                         {
-                            if (!_queueHasDataEvent.WaitOne(TimeSpan.FromSeconds(90)))
+                            if (!_queueHasDataEvent.WaitOne(Constants.JobThreadWaitTime))
                             {
                                 ToStop("excutor idel times over limit.");
                                 break;
