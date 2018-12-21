@@ -89,7 +89,7 @@ namespace XxlJob.Core
             stringBuffer
                 .Append(DateTime.Now.ToString("s")).Append(" ")
                 .Append("[" + callInfo.GetMethod().DeclaringType.FullName + "#" + callInfo.GetMethod().Name + "]").Append("-")
-                .Append("[" + callInfo.GetFileLineNumber() + "]").Append("-")
+                .Append("[line " + callInfo.GetFileLineNumber() + "]").Append("-")
                 .Append("[thread " + Thread.CurrentThread.ManagedThreadId + "]").Append(" ")
                 .Append(appendLog ?? string.Empty)
                 .AppendLine();
