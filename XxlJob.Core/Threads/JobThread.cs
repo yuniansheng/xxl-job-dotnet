@@ -108,45 +108,41 @@ namespace XxlJob.Core.Threads
 
                         var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
                         executeResult = handler.Execute(executionContext);
-
-                        if (executeResult == null)
-                        {
-                            executeResult = ReturnT.FAIL;
-                        }
                         JobLogger.Log("<br>----------- xxl-job job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
                     }
                     else
                     {
-                        try
+                        if (!_queueHasDataEvent.WaitOne(Constants.JobThreadWaitTime))
                         {
-                            if (!_queueHasDataEvent.WaitOne(Constants.JobThreadWaitTime))
-                            {
-                                ToStop("excutor idel times over limit.");
-                                break;
-                            }
-                        }
-                        catch (ThreadInterruptedException)
-                        {
-                            break;
+                            ToStop("excutor idel times over limit.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    var errorMsg = ex.ToString();
-                    executeResult = ReturnT.CreateFailedResult(errorMsg);
-                    JobLogger.Log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
+                    if (triggerParam != null)
+                    {
+                        if (_toStop)
+                        {
+                            JobLogger.Log("<br>----------- JobThread toStop, stopReason:" + _stopReason);
+                        }
+                        var errorMsg = ex.ToString();
+                        executeResult = ReturnT.CreateFailedResult(errorMsg);
+                        JobLogger.Log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
+                    }
+                    else
+                    {
+                        //todo:log error
+                    }
                 }
                 finally
                 {
-                    if (executeResult != null)
+                    if (triggerParam != null)
                     {
-                        OnCallback?.Invoke(this, new HandleCallbackParam(triggerParam.logId, triggerParam.logDateTim, executeResult));
+                        OnCallback?.Invoke(this, new HandleCallbackParam(triggerParam.logId, triggerParam.logDateTim, executeResult ?? ReturnT.FAIL));
                     }
                 }
             }
-
-            JobLogger.Log("<br>----------- JobThread toStop, stopReason:" + _stopReason);
 
             // callback trigger request in queue
             while (_triggerQueue.TryDequeue(out triggerParam))
