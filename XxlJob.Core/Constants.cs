@@ -9,6 +9,7 @@ namespace XxlJob.Core
     internal static class Constants
     {
         public const int MAX_CALLBACK_RETRY_TIMES = 10;
+        public const int DEFAULT_LOG_RETENTION_DAYS = 30;
 
         public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(10);
 

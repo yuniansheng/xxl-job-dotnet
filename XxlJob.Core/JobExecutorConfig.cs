@@ -14,6 +14,7 @@ namespace XxlJob.Core
         {
             JobHandlerFactory = new DefaultJobHandlerFactory();
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "xxl-job-logs");
+            LogRetentionDays = Constants.DEFAULT_LOG_RETENTION_DAYS;
             AdminAddresses = new List<string>();
         }
 
@@ -25,6 +26,11 @@ namespace XxlJob.Core
         /// 执行日志保存目录，默认AppDomain.CurrentDomain.BaseDirectory
         /// </summary>
         public string LogPath { get; set; }
+
+        /// <summary>
+        /// 日志文件保留时间，默认保留30天，超过指定天数将被清除，如果指定0则永远不被清除
+        /// </summary>
+        public int LogRetentionDays { get; set; }
 
         /// <summary>
         /// 调度中心地址列表，多个用逗号分隔，例如 "http://address" or "http://address01,http://address02"

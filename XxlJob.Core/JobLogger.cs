@@ -14,6 +14,13 @@ namespace XxlJob.Core
 {
     public static class JobLogger
     {
+        private static JobExecutorConfig JobExecutorConfig;
+
+        internal static void Init(JobExecutorConfig config)
+        {
+            JobExecutorConfig = config;
+        }
+
         public static void Log(string format, params object[] args)
         {
             var appendLog = string.Format(format, args);
@@ -114,6 +121,7 @@ namespace XxlJob.Core
                 if (!Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
+                    CleanOldLogs();
                 }
                 CallContext.LogicalSetData("XxlJob.LogFileName", filePath);
             }
@@ -140,6 +148,43 @@ namespace XxlJob.Core
         {
             //log fileName like: logPath/HandlerLogs/yyyy-MM-dd/9999.log
             return Path.Combine(logPath, "HandlerLogs", DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
+        }
+
+        private static void CleanOldLogs()
+        {
+            if (JobExecutorConfig.LogRetentionDays <= 0)
+            {
+                return;
+            }
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    var handlerLogsDir = new DirectoryInfo(Path.Combine(JobExecutorConfig.LogPath, "HandlerLogs"));
+                    if (!handlerLogsDir.Exists)
+                    {
+                        return;
+                    }
+
+                    var today = DateTime.UtcNow.Date;
+                    foreach (var dir in handlerLogsDir.GetDirectories())
+                    {
+                        DateTime dirDate;
+                        if (DateTime.TryParse(dir.Name, out dirDate))
+                        {
+                            if (today.Subtract(dirDate.Date).Days > JobExecutorConfig.LogRetentionDays)
+                            {
+                                dir.Delete(true);
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    //todo:log error
+                }
+            });
         }
     }
 }

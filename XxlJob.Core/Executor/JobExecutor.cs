@@ -20,6 +20,7 @@ namespace XxlJob.Core.Executor
         public JobExecutor(JobExecutorConfig config)
         {
             _config = config;
+            JobLogger.Init(config);
             _jobThreadFactory = new JobThreadFactory(_config);
         }
 
