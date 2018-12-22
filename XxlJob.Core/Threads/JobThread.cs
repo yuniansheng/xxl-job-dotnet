@@ -96,7 +96,7 @@ namespace XxlJob.Core.Threads
                         _running = true;
                         byte temp;
                         _triggerLogIdSet.TryRemove(triggerParam.logId, out temp);
-                        JobLogger.SetLogFileName(_executorConfig.LogPath, triggerParam.logDateTim, triggerParam.logId);
+                        JobLogger.SetLogFileName(triggerParam.logDateTim, triggerParam.logId);
                         var executionContext = new JobExecutionContext()
                         {
                             BroadcastIndex = triggerParam.broadcastIndex,

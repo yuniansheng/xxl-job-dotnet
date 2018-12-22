@@ -37,17 +37,17 @@ namespace XxlJob.Core
         /// <summary>
         /// 在由logDateTime、logId指定的文件记录日志
         /// </summary>
-        internal static void LogAtSpecifiedFile(string logPath, long logDateTime, int logId, string content)
+        internal static void LogAtSpecifiedFile(long logDateTime, int logId, string content)
         {
-            var filePath = MakeLogFileName(logPath, logDateTime, logId);
+            var filePath = MakeLogFileName(logDateTime, logId);
             var callInfo = new StackTrace(true).GetFrame(1);
             LogDetail(filePath, callInfo, content);
         }
 
 
-        internal static LogResult ReadLog(string logPath, long logDateTime, int logId, int fromLineNum)
+        internal static LogResult ReadLog(long logDateTime, int logId, int fromLineNum)
         {
-            var filePath = MakeLogFileName(logPath, logDateTime, logId);
+            var filePath = MakeLogFileName(logDateTime, logId);
             if (string.IsNullOrEmpty(filePath))
             {
                 return new LogResult(fromLineNum, 0, "readLog fail, logFile not found", true);
@@ -112,11 +112,11 @@ namespace XxlJob.Core
             }
         }
 
-        internal static void SetLogFileName(string logPath, long logDateTime, int logId)
+        internal static void SetLogFileName(long logDateTime, int logId)
         {
             try
             {
-                var filePath = MakeLogFileName(logPath, logDateTime, logId);
+                var filePath = MakeLogFileName(logDateTime, logId);
                 var dir = Path.GetDirectoryName(filePath);
                 if (!Directory.Exists(dir))
                 {
@@ -144,10 +144,11 @@ namespace XxlJob.Core
             }
         }
 
-        private static string MakeLogFileName(string logPath, long logDateTime, int logId)
+        private static string MakeLogFileName(long logDateTime, int logId)
         {
             //log fileName like: logPath/HandlerLogs/yyyy-MM-dd/9999.log
-            return Path.Combine(logPath, "HandlerLogs", DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
+            return Path.Combine(JobExecutorConfig.LogPath, "HandlerLogs",
+                DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
         }
 
         private static void CleanOldLogs()

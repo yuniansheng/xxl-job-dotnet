@@ -167,7 +167,7 @@ namespace XxlJob.Core.Threads
         {
             foreach (var param in callbackParamList)
             {
-                JobLogger.LogAtSpecifiedFile(_executorConfig.LogPath, param.logDateTim, param.logId, logContent);
+                JobLogger.LogAtSpecifiedFile(param.logDateTim, param.logId, logContent);
             }
         }
 
