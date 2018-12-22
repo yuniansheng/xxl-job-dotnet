@@ -36,7 +36,7 @@ namespace XxlJob.Core.Executor
         {
             _jobExecutorConfig = jobExecutorConfig;
             _client = new HttpClient();
-            _client.Timeout = TimeSpan.FromSeconds(30);
+            _client.Timeout = Constants.AdminServerDefaultTimeout;
             InitAddress();
         }
 
