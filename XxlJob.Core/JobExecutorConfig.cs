@@ -13,8 +13,8 @@ namespace XxlJob.Core
         public JobExecutorConfig()
         {
             JobHandlerFactory = new DefaultJobHandlerFactory();
-            LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "xxl-job-logs");
-            LogRetentionDays = Constants.DEFAULT_LOG_RETENTION_DAYS;
+            LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
+            LogRetentionDays = Constants.DefaultLogRetentionDays;
             AdminAddresses = new List<string>();
         }
 

@@ -123,7 +123,7 @@ namespace XxlJob.Core
                     Directory.CreateDirectory(dir);
                     CleanOldLogs();
                 }
-                CallContext.LogicalSetData("XxlJob.LogFileName", filePath);
+                CallContext.LogicalSetData(Constants.LogFileNameCallContextKey, filePath);
             }
             catch (Exception)
             {
@@ -135,7 +135,7 @@ namespace XxlJob.Core
         {
             try
             {
-                return CallContext.LogicalGetData("XxlJob.LogFileName") as string;
+                return CallContext.LogicalGetData(Constants.LogFileNameCallContextKey) as string;
             }
             catch (Exception)
             {
@@ -147,7 +147,7 @@ namespace XxlJob.Core
         private static string MakeLogFileName(long logDateTime, int logId)
         {
             //log fileName like: logPath/HandlerLogs/yyyy-MM-dd/9999.log
-            return Path.Combine(JobExecutorConfig.LogPath, "HandlerLogs",
+            return Path.Combine(JobExecutorConfig.LogPath, Constants.HandleLogsDirectory,
                 DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
         }
 
@@ -162,7 +162,7 @@ namespace XxlJob.Core
             {
                 try
                 {
-                    var handlerLogsDir = new DirectoryInfo(Path.Combine(JobExecutorConfig.LogPath, "HandlerLogs"));
+                    var handlerLogsDir = new DirectoryInfo(Path.Combine(JobExecutorConfig.LogPath, Constants.HandleLogsDirectory));
                     if (!handlerLogsDir.Exists)
                     {
                         return;

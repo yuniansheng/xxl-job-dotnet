@@ -8,10 +8,13 @@ namespace XxlJob.Core
 {
     internal static class Constants
     {
-        public const int MAX_CALLBACK_RETRY_TIMES = 10;
-        public const int DEFAULT_LOG_RETENTION_DAYS = 30;
+        public const string XxlLogsDefaultRootDirectory = "xxl-job-logs";
+        public const string HandleLogsDirectory = "HandlerLogs";
+        public const string LogFileNameCallContextKey = "XxlJob.LogFileName";
+        public const int DefaultLogRetentionDays = 30;
 
-        public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(10);
+        public const int MaxCallbackRetryTimes = 10;
+        public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(600);
 
         public static TimeSpan JobThreadWaitTime = TimeSpan.FromSeconds(90);
 

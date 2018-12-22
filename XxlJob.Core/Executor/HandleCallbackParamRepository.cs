@@ -43,7 +43,7 @@ namespace XxlJob.Core.Executor
                 {
                     foreach (var item in callbackParamList)
                     {
-                        if (item.callbackRetryTimes >= Constants.MAX_CALLBACK_RETRY_TIMES)
+                        if (item.callbackRetryTimes >= Constants.MaxCallbackRetryTimes)
                         {
                             //todo:记录日志并丢弃,防止重复写入文件导致文件过大
                         }
