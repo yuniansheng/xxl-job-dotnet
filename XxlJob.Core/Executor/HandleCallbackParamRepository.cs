@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ namespace XxlJob.Core.Executor
     internal class HandleCallbackParamRepository
     {
         private readonly JobExecutorConfig _executorConfig;
-        private string _callbackSavePath;
-        private JsonSerializer _jsonSerializer;
+        private readonly string _callbackSavePath;
+        private readonly JsonSerializer _jsonSerializer;
+        private readonly ILogger _logger;
 
         public HandleCallbackParamRepository(JobExecutorConfig executorConfig)
         {
@@ -27,6 +29,7 @@ namespace XxlJob.Core.Executor
             }
 
             _jsonSerializer = JsonSerializer.Create();
+            _logger = executorConfig.LoggerFactory.CreateLogger<HandleCallbackParamRepository>();
         }
 
 
@@ -45,7 +48,8 @@ namespace XxlJob.Core.Executor
                     {
                         if (item.callbackRetryTimes >= Constants.MaxCallbackRetryTimes)
                         {
-                            //todo:记录日志并丢弃,防止重复写入文件导致文件过大
+                            //记录日志并丢弃,防止重复写入文件导致文件过大
+                            _logger.LogInformation("callback failed too many times and will be abandon,logId {logId}", item.logId);
                         }
                         else
                         {
@@ -56,9 +60,9 @@ namespace XxlJob.Core.Executor
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //todo:log error
+                _logger.LogError(ex, "SaveCallbackParams error.");
             }
         }
 
@@ -82,9 +86,9 @@ namespace XxlJob.Core.Executor
                     var item = JsonConvert.DeserializeObject<HandleCallbackParam>(fileLines[i]);
                     failCallbackParamList.Add(item);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //todo:log error                    
+                    _logger.LogError(ex, "DeserializeObject error for line {line}", fileLines[i]);
                 }
             }
             return failCallbackParamList;

@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace XxlJob.Core.Threads
         // avoid repeat trigger for the same TRIGGER_LOG_ID
         private readonly ConcurrentDictionary<int, byte> _triggerLogIdSet;
         private readonly AutoResetEvent _queueHasDataEvent;
+        private readonly ILogger _logger;
 
         private Thread _thread;
         private bool _running = false;
@@ -34,6 +36,7 @@ namespace XxlJob.Core.Threads
             _triggerQueue = new ConcurrentQueue<TriggerParam>();
             _triggerLogIdSet = new ConcurrentDictionary<int, byte>();
             _queueHasDataEvent = new AutoResetEvent(false);
+            _logger = executorConfig.LoggerFactory.CreateLogger<JobThread>();
         }
 
         public ReturnT PushTriggerQueue(TriggerParam triggerParam)
@@ -41,9 +44,11 @@ namespace XxlJob.Core.Threads
             // avoid repeat
             if (_triggerLogIdSet.ContainsKey(triggerParam.logId))
             {
-                //logger.info(">>>>>>>>>>> repeate trigger job, logId:{}", triggerParam.getLogId());
+                _logger.LogInformation("repeate trigger job, logId:{logId}", triggerParam.logId);
                 return ReturnT.CreateFailedResult("repeate trigger job, logId:" + triggerParam.logId);
             }
+
+            _logger.LogInformation("repeate trigger job, logId:{logId}", triggerParam.logId);
 
             _triggerLogIdSet[triggerParam.jobId] = 0;
             _triggerQueue.Enqueue(triggerParam);
@@ -132,7 +137,7 @@ namespace XxlJob.Core.Threads
                     }
                     else
                     {
-                        //todo:log error
+                        _logger.LogError(ex, "JobThread exception.");
                     }
                 }
                 finally

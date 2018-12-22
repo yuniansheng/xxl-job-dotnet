@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,11 +17,13 @@ namespace XxlJob.Core.Executor
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();
         private readonly Lazy<TriggerCallbackThread> _callbackThread;
         private readonly object _syncObject = new object();
+        private readonly ILogger _logger;
 
         public JobThreadFactory(JobExecutorConfig executorConfig)
         {
             _executorConfig = executorConfig;
             _callbackThread = new Lazy<TriggerCallbackThread>(CreateAndStartCallbackThread, LazyThreadSafetyMode.ExecutionAndPublication);
+            _logger = executorConfig.LoggerFactory.CreateLogger<JobThreadFactory>();
         }
 
 
@@ -94,9 +97,9 @@ namespace XxlJob.Core.Executor
                 {
                     _callbackThread.Value.PushCallBackParam(arg);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //todo:log errro
+                    _logger.LogError(ex, "jobThread oncallback failed.");
                 }
             };
             _jobThreads[jobId] = jobThread;

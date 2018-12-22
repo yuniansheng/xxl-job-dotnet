@@ -9,6 +9,8 @@ using System.Web.Http;
 using com.xxl.job.core.biz.model;
 using XxlJob.Core;
 using XxlJob.WebApiHost;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SampleWeb
 {
@@ -16,11 +18,19 @@ namespace SampleWeb
     {
         public static void Register(HttpConfiguration config)
         {
+            IServiceCollection services = new ServiceCollection();
+            services.AddLogging(logging =>
+            {
+                logging.AddDebug();
+            });
+
+            var loggerFactory = services.BuildServiceProvider().GetService<ILoggerFactory>();
             config.EnableXxlJob(jobConfig =>
             {
                 jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
                 jobConfig.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
                 jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
+                jobConfig.LoggerFactory = loggerFactory;
             });
         }
     }

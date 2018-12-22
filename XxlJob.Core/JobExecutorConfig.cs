@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,6 +18,7 @@ namespace XxlJob.Core
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             LogRetentionDays = Constants.DefaultLogRetentionDays;
             AdminAddresses = new List<string>();
+            LoggerFactory = NullLoggerFactory.Instance;
         }
 
         public string AccessToken { get; set; }
@@ -36,5 +39,10 @@ namespace XxlJob.Core
         /// 调度中心地址列表，多个用逗号分隔，例如 "http://address" or "http://address01,http://address02"
         /// </summary>
         public List<string> AdminAddresses { get; set; }
+
+        /// <summary>
+        /// 用于记录xll-jon自身内部日志的日志提供工厂
+        /// </summary>
+        public ILoggerFactory LoggerFactory { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using com.xxl.job.core.rpc.codec;
 using hessiancsharp.io;
 using java.lang;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace XxlJob.Core.Executor
     {
         private readonly JobExecutorConfig _jobExecutorConfig;
         private readonly HttpClient _client;
+        private readonly ILogger _logger;
         private List<AddressEntry> _addresses;
         private int _currentAdminIndex;
 
@@ -37,6 +39,7 @@ namespace XxlJob.Core.Executor
             _jobExecutorConfig = jobExecutorConfig;
             _client = new HttpClient();
             _client.Timeout = Constants.AdminServerDefaultTimeout;
+            _logger = jobExecutorConfig.LoggerFactory.CreateLogger<AdminClient>();
             InitAddress();
         }
 
@@ -82,9 +85,9 @@ namespace XxlJob.Core.Executor
                     responseStream = await responseMessage.Content.ReadAsStreamAsync();
                     item.Reset();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //todo:log error
+                    _logger.LogError(ex, "request admin error.");
                     item.SetFail();
                     continue;
                 }
@@ -118,9 +121,9 @@ namespace XxlJob.Core.Executor
                     var entry = new AddressEntry { RequestUri = uri };
                     _addresses.Add(entry);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //todo:log error                    
+                    _logger.LogError(ex, "init admin address error.");
                 }
             }
         }

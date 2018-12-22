@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,9 +18,12 @@ namespace XxlJob.Core
 
         private static AsyncLocal<string> LogFileName = new AsyncLocal<string>();
 
+        private static ILogger _logger;
+
         internal static void Init(JobExecutorConfig config)
         {
             JobExecutorConfig = config;
+            _logger = config.LoggerFactory.CreateLogger("XxlJob.Core.JobLogger");
         }
 
         public static void Log(string format, params object[] args)
@@ -76,9 +80,9 @@ namespace XxlJob.Core
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //todo:log error                
+                _logger.LogError(ex, "ReadLog error.");
             }
 
             // result
@@ -107,9 +111,9 @@ namespace XxlJob.Core
             {
                 File.AppendAllText(logFileName, formatAppendLog, Encoding.UTF8);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //todo:log error
+                _logger.LogError(ex, "LogDetail error");
             }
         }
 
@@ -126,23 +130,15 @@ namespace XxlJob.Core
                 }
                 LogFileName.Value = filePath;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //todo:log error
+                _logger.LogError(ex, "SetLogFileName error.");
             }
         }
 
         private static string GetLogFileName()
         {
-            try
-            {
-                return LogFileName.Value;
-            }
-            catch (Exception)
-            {
-                //todo:log error
-                return null;
-            }
+            return LogFileName.Value;
         }
 
         private static string MakeLogFileName(long logDateTime, int logId)
@@ -182,9 +178,9 @@ namespace XxlJob.Core
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    //todo:log error
+                    _logger.LogError(ex, "CleanOldLogs error.");
                 }
             });
         }

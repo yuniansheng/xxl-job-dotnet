@@ -1,4 +1,5 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace XxlJob.Core.Threads
         private readonly ConcurrentQueue<HandleCallbackParam> _callBackQueue = new ConcurrentQueue<HandleCallbackParam>();
         private readonly JobExecutorConfig _executorConfig;
         private readonly AutoResetEvent _queueHasDataEvent;
+        private readonly ILogger _logger;
         private volatile bool toStop = false;
         private Thread callbackThread;
         private Thread retryThread;
@@ -27,6 +29,7 @@ namespace XxlJob.Core.Threads
         {
             _executorConfig = executorConfig;
             _queueHasDataEvent = new AutoResetEvent(false);
+            _logger = executorConfig.LoggerFactory.CreateLogger<TriggerCallbackThread>();
         }
 
         public void Start()
@@ -34,7 +37,7 @@ namespace XxlJob.Core.Threads
             _adminClient = new AdminClient(_executorConfig);
             if (!_adminClient.IsAdminAccessable)
             {
-                //logger.warn(">>>>>>>>>>> xxl-job, executor callback config fail, adminAddresses is not accessable.");
+                _logger.LogWarning("xxl-job, executor callback config fail, adminAddresses is not accessable.");
                 toStop = true;
                 return;
             }
@@ -61,7 +64,7 @@ namespace XxlJob.Core.Threads
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    //logger.error(e.getMessage(), ex);
+                    _logger.LogError(ex, "callbackThread interrupted.");
                 }
             }
 
@@ -75,7 +78,7 @@ namespace XxlJob.Core.Threads
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    //logger.error(e.getMessage(), ex);
+                    _logger.LogError(ex, "retryThread interrupted.");
                 }
             }
         }
@@ -114,7 +117,7 @@ namespace XxlJob.Core.Threads
                 ConsumeAndCallback();
             }
 
-            //logger.info(">>>>>>>>>>> xxl-job, executor callback thread destory.");
+            _logger.LogInformation("xxl-job, executor callback thread destory.");
         }
 
         /// <summary>
@@ -124,7 +127,7 @@ namespace XxlJob.Core.Threads
         private bool ConsumeAndCallback()
         {
             var callbackParamList = new List<HandleCallbackParam>();
-            HandleCallbackParam callbackParam;            
+            HandleCallbackParam callbackParam;
             while (callbackParamList.Count < Constants.MaxCallbackRecordsPerRequest && _callBackQueue.TryDequeue(out callbackParam))
             {
                 callbackParamList.Add(callbackParam);
@@ -156,7 +159,7 @@ namespace XxlJob.Core.Threads
             }
             catch (Exception ex)
             {
-                //todo:log error
+                _logger.LogError(ex, "xxl-job, callback admin error.");
                 LogCallbackResult(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + ex.Message);
             }
 
@@ -184,16 +187,16 @@ namespace XxlJob.Core.Threads
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    //logger.warn(">>>>>>>>>>> xxl-job, executor retry callback thread interrupted, error msg:{}", e.getMessage());
+                    _logger.LogWarning(ex, "xxl-job, executor retry callback thread interrupted.");
                     break;
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    //logger.error(e.getMessage(), e);
+                    _logger.LogError(ex, "xxl-job, executor retry callback thread error.");
                 }
             }
 
-            //logger.info(">>>>>>>>>>> xxl-job, executor retry callback thread destory.");
+            _logger.LogInformation("xxl-job, executor retry callback thread destory.");
         }
 
         private void DoRetry()
