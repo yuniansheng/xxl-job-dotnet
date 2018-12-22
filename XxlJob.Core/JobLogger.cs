@@ -15,7 +15,7 @@ namespace XxlJob.Core
     {
         private static JobExecutorConfig JobExecutorConfig;
 
-        private static AsyncLocal<string> LogFileName;
+        private static AsyncLocal<string> LogFileName = new AsyncLocal<string>();
 
         internal static void Init(JobExecutorConfig config)
         {

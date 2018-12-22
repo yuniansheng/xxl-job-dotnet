@@ -15,6 +15,10 @@ namespace XxlJob.Core
 
         public const int MaxCallbackRetryTimes = 10;
         public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(600);
+        //Admin集群中的某台机器熔断后间隔多长时间再重试
+        public static TimeSpan AdminServerReconnectInterval = TimeSpan.FromMinutes(3);
+        //Admin集群中的某台机器请求失败多少次后熔断
+        public const int AdminServerCircuitFaildTimes = 3;
 
         public static TimeSpan JobThreadWaitTime = TimeSpan.FromSeconds(90);
 

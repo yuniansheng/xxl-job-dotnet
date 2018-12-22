@@ -19,6 +19,7 @@ namespace SampleWeb
             config.EnableXxlJob(jobConfig =>
             {
                 jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
+                jobConfig.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
                 jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
             });
         }

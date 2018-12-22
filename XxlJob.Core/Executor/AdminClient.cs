@@ -62,8 +62,7 @@ namespace XxlJob.Core.Executor
             var ms = new MemoryStream();
             var serializer = new CHessianOutput(ms);
             serializer.WriteObject(request);
-            var content = new ByteArrayContent(ms.ToArray());
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            var responseBody = ms.ToArray();
 
             int triedTimes = 0;
             while (triedTimes++ < _addresses.Count)
@@ -76,6 +75,8 @@ namespace XxlJob.Core.Executor
                 Stream responseStream;
                 try
                 {
+                    var content = new ByteArrayContent(responseBody);
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     var responseMessage = await _client.PostAsync(item.RequestUri, content);
                     responseMessage.EnsureSuccessStatusCode();
                     responseStream = await responseMessage.Content.ReadAsStreamAsync();
@@ -138,10 +139,10 @@ namespace XxlJob.Core.Executor
             if (LastFailedTime == null)
                 return true;
 
-            if (DateTime.UtcNow.Subtract(LastFailedTime.Value).TotalMinutes > 1)
+            if (DateTime.UtcNow.Subtract(LastFailedTime.Value) > Constants.AdminServerReconnectInterval)
                 return true;
 
-            if (FailedTimes < 5)
+            if (FailedTimes < Constants.AdminServerCircuitFaildTimes)
                 return true;
 
             return false;
