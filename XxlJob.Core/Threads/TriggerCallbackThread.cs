@@ -124,8 +124,8 @@ namespace XxlJob.Core.Threads
         private bool ConsumeAndCallback()
         {
             var callbackParamList = new List<HandleCallbackParam>();
-            HandleCallbackParam callbackParam;
-            while (_callBackQueue.TryDequeue(out callbackParam))
+            HandleCallbackParam callbackParam;            
+            while (callbackParamList.Count < Constants.MaxCallbackRecordsPerRequest && _callBackQueue.TryDequeue(out callbackParam))
             {
                 callbackParamList.Add(callbackParam);
             }
@@ -203,7 +203,7 @@ namespace XxlJob.Core.Threads
             int currentIndex = 0;
             while (currentIndex < failCallbackParamList.Count)
             {
-                var count = Math.Min(100, failCallbackParamList.Count - currentIndex);
+                var count = Math.Min(Constants.MaxCallbackRecordsPerRequest, failCallbackParamList.Count - currentIndex);
                 var page = failCallbackParamList.GetRange(currentIndex, count);
                 DoCallback(failCallbackParamList);
                 currentIndex += count;

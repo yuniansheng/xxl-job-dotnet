@@ -14,6 +14,8 @@ namespace XxlJob.Core
         public const int DefaultLogRetentionDays = 30;
 
         public const int MaxCallbackRetryTimes = 10;
+        //每次回调最多发送几条记录
+        public const int MaxCallbackRecordsPerRequest = 100;
         public static TimeSpan CallbackRetryInterval = TimeSpan.FromSeconds(600);
 
         //Admin集群机器请求默认超时时间
