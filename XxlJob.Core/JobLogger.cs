@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +14,8 @@ namespace XxlJob.Core
     public static class JobLogger
     {
         private static JobExecutorConfig JobExecutorConfig;
+
+        private static AsyncLocal<string> LogFileName;
 
         internal static void Init(JobExecutorConfig config)
         {
@@ -123,7 +124,7 @@ namespace XxlJob.Core
                     Directory.CreateDirectory(dir);
                     CleanOldLogs();
                 }
-                CallContext.LogicalSetData(Constants.LogFileNameCallContextKey, filePath);
+                LogFileName.Value = filePath;
             }
             catch (Exception)
             {
@@ -135,7 +136,7 @@ namespace XxlJob.Core
         {
             try
             {
-                return CallContext.LogicalGetData(Constants.LogFileNameCallContextKey) as string;
+                return LogFileName.Value;
             }
             catch (Exception)
             {
