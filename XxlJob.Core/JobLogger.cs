@@ -20,10 +20,10 @@ namespace XxlJob.Core
 
         private static ILogger _logger;
 
-        internal static void Init(JobExecutorConfig config)
+        internal static void Init(JobExecutorConfig config, ILoggerFactory loggerFactory)
         {
             JobExecutorConfig = config;
-            _logger = config.LoggerFactory.CreateLogger("XxlJob.Core.JobLogger");
+            _logger = loggerFactory.CreateLogger("XxlJob.Core.JobLogger");
         }
 
         public static void Log(string format, params object[] args)

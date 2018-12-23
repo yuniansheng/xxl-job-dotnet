@@ -1,5 +1,7 @@
 ﻿using com.xxl.job.core.biz.model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,19 +13,23 @@ using XxlJob.Core.Threads;
 
 namespace XxlJob.Core.Executor
 {
-    internal class JobThreadFactory
+    public class JobThreadFactory
     {
         private readonly JobExecutorConfig _executorConfig;
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();
         private readonly Lazy<TriggerCallbackThread> _callbackThread;
         private readonly object _syncObject = new object();
         private readonly ILogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IServiceProvider _services;
 
-        public JobThreadFactory(JobExecutorConfig executorConfig)
+        public JobThreadFactory(IServiceProvider services, IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory)
         {
-            _executorConfig = executorConfig;
+            _services = services;
+            _executorConfig = executorConfig.Value;
             _callbackThread = new Lazy<TriggerCallbackThread>(CreateAndStartCallbackThread, LazyThreadSafetyMode.ExecutionAndPublication);
-            _logger = executorConfig.LoggerFactory.CreateLogger<JobThreadFactory>();
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<JobThreadFactory>();
         }
 
 
@@ -90,7 +96,7 @@ namespace XxlJob.Core.Executor
 
         private JobThread CreateJobThread(int jobId)
         {
-            var jobThread = new JobThread(jobId, _executorConfig);
+            var jobThread = _services.GetService<JobThread>();
             jobThread.OnCallback += (sender, arg) =>
             {
                 try
@@ -108,7 +114,8 @@ namespace XxlJob.Core.Executor
 
         private TriggerCallbackThread CreateAndStartCallbackThread()
         {
-            var thread = new TriggerCallbackThread(_executorConfig);
+            //var thread = new TriggerCallbackThread(_executorConfig);
+            var thread = _services.GetService<TriggerCallbackThread>();
             thread.Start();
             return thread;
         }

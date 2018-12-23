@@ -16,9 +16,9 @@ namespace XxlJob.WebApiHost
     {
         private readonly JobExecutor _executor;
 
-        public XxlJobExecutorHandler(JobExecutorConfig config)
+        public XxlJobExecutorHandler(JobExecutor executor)
         {
-            _executor = new JobExecutor(config);
+            _executor = executor;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

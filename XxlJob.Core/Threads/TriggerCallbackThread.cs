@@ -1,5 +1,6 @@
 ﻿using com.xxl.job.core.biz.model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,23 +26,25 @@ namespace XxlJob.Core.Threads
         private AdminClient _adminClient;
         private HandleCallbackParamRepository _paramRepository;
 
-        public TriggerCallbackThread(JobExecutorConfig executorConfig)
+        public TriggerCallbackThread(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory, AdminClient adminClient, HandleCallbackParamRepository paramRepository)
         {
-            _executorConfig = executorConfig;
+            _executorConfig = executorConfig.Value;
             _queueHasDataEvent = new AutoResetEvent(false);
-            _logger = executorConfig.LoggerFactory.CreateLogger<TriggerCallbackThread>();
+            _logger = loggerFactory.CreateLogger<TriggerCallbackThread>();
+            _adminClient = adminClient;
+            _paramRepository = paramRepository;
         }
 
         public void Start()
         {
-            _adminClient = new AdminClient(_executorConfig);
+            //_adminClient = new AdminClient(_executorConfig);
             if (!_adminClient.IsAdminAccessable)
             {
                 _logger.LogWarning("xxl-job, executor callback config fail, adminAddresses is not accessable.");
                 toStop = true;
                 return;
             }
-            _paramRepository = new HandleCallbackParamRepository(_executorConfig);
+            //_paramRepository = new HandleCallbackParamRepository(_executorConfig);
 
             callbackThread = new Thread(CallbackMethod);
             retryThread = new Thread(RetryMethod);

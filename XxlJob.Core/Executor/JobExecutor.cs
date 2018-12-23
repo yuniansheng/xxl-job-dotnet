@@ -1,6 +1,8 @@
 ﻿using com.xxl.job.core.biz.model;
 using com.xxl.job.core.rpc.codec;
 using hessiancsharp.io;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,11 +19,11 @@ namespace XxlJob.Core.Executor
         private readonly JobExecutorConfig _config;
         private readonly JobThreadFactory _jobThreadFactory;
 
-        public JobExecutor(JobExecutorConfig config)
+        public JobExecutor(IOptions<JobExecutorConfig> config, JobThreadFactory threadFactory, ILoggerFactory loggerFactory)
         {
-            _config = config;
-            JobLogger.Init(config);
-            _jobThreadFactory = new JobThreadFactory(_config);
+            _config = config.Value;
+            JobLogger.Init(config.Value, loggerFactory);
+            _jobThreadFactory = threadFactory;
         }
 
         public byte[] HandleRequest(Stream inputStream)

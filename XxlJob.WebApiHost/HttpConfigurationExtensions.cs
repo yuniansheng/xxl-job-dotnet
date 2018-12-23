@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using XxlJob.Core;
+using XxlJob.Core.Executor;
 
 namespace XxlJob.WebApiHost
 {
@@ -13,22 +14,19 @@ namespace XxlJob.WebApiHost
         private static readonly string DefaultListenPath = string.Empty;
 
 
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, Action<JobExecutorConfig> configure = null)
+        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, JobExecutor executor)
         {
-            EnableXxlJob(httpConfiguration, DefaultListenPath, configure);
+            EnableXxlJob(httpConfiguration, executor, DefaultListenPath);
         }
 
-        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, string listenPath, Action<JobExecutorConfig> configure = null)
+        public static void EnableXxlJob(this HttpConfiguration httpConfiguration, JobExecutor executor, string listenPath)
         {
-            var jobConfig = new JobExecutorConfig();
-            configure?.Invoke(jobConfig);
-
             httpConfiguration.Routes.MapHttpRoute(
                 name: "xxl-job",
                 routeTemplate: listenPath,
                 defaults: null,
                 constraints: new { isXxlJob = new XxlJobConstraint() },
-                handler: new XxlJobExecutorHandler(jobConfig)
+                handler: new XxlJobExecutorHandler(executor)
             );
         }
     }

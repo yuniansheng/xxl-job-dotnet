@@ -11,6 +11,8 @@ using XxlJob.Core;
 using XxlJob.WebApiHost;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using XxlJob.Core.DependencyInjection;
+using XxlJob.Core.Executor;
 
 namespace SampleWeb
 {
@@ -18,20 +20,27 @@ namespace SampleWeb
     {
         public static void Register(HttpConfiguration config)
         {
-            IServiceCollection services = new ServiceCollection();
-            services.AddLogging(logging =>
-            {
-                logging.AddDebug();
-            });
+            var services = new ServiceCollection()
+                .AddLogging(logging => logging.AddDebug())
+                .AddXxlJob(option =>
+                {
+                    option.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
+                    option.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
+                    option.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
+                })
+                .BuildServiceProvider();
 
-            var loggerFactory = services.BuildServiceProvider().GetService<ILoggerFactory>();
-            config.EnableXxlJob(jobConfig =>
-            {
-                jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
-                jobConfig.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
-                jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
-                jobConfig.LoggerFactory = loggerFactory;
-            });
+            var executor = services.GetRequiredService<JobExecutor>();
+            config.EnableXxlJob(executor);
+
+            //var loggerFactory = services.BuildServiceProvider().GetService<ILoggerFactory>();
+            //config.EnableXxlJob(jobConfig =>
+            //{
+            //    jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
+            //    jobConfig.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
+            //    jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
+            //    jobConfig.LoggerFactory = loggerFactory;
+            //});
         }
     }
 

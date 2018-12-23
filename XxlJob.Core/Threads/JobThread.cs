@@ -1,5 +1,6 @@
 ﻿using com.xxl.job.core.biz.model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace XxlJob.Core.Threads
 {
-    internal class JobThread
+    public class JobThread
     {
-        private readonly int _jobId;
         private readonly JobExecutorConfig _executorConfig;
         private readonly ConcurrentQueue<TriggerParam> _triggerQueue;
         // avoid repeat trigger for the same TRIGGER_LOG_ID
         private readonly ConcurrentDictionary<int, byte> _triggerLogIdSet;
         private readonly AutoResetEvent _queueHasDataEvent;
         private readonly ILogger _logger;
+        private readonly JobHandlerFactory _jobHandlerFactory;
 
         private Thread _thread;
         private bool _running = false;
@@ -29,14 +30,14 @@ namespace XxlJob.Core.Threads
 
         public bool Stopped { get { return _toStop; } }
 
-        public JobThread(int jobId, JobExecutorConfig executorConfig)
+        public JobThread(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory, JobHandlerFactory jobHandlerFactory)
         {
-            _jobId = jobId;
-            _executorConfig = executorConfig;
+            _executorConfig = executorConfig.Value;
             _triggerQueue = new ConcurrentQueue<TriggerParam>();
             _triggerLogIdSet = new ConcurrentDictionary<int, byte>();
             _queueHasDataEvent = new AutoResetEvent(false);
-            _logger = executorConfig.LoggerFactory.CreateLogger<JobThread>();
+            _logger = loggerFactory.CreateLogger<JobThread>();
+            _jobHandlerFactory = jobHandlerFactory;
         }
 
         public ReturnT PushTriggerQueue(TriggerParam triggerParam)
@@ -111,7 +112,7 @@ namespace XxlJob.Core.Threads
                         // execute
                         JobLogger.Log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + triggerParam.executorParams);
 
-                        var handler = _executorConfig.JobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
+                        var handler = _jobHandlerFactory.GetJobHandler(triggerParam.executorHandler);
                         executeResult = handler.Execute(executionContext);
                         JobLogger.Log("<br>----------- xxl-job job execute end(finish) -----------<br>----------- ReturnT:" + executeResult);
                     }

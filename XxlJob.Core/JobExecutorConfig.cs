@@ -14,16 +14,16 @@ namespace XxlJob.Core
     {
         public JobExecutorConfig()
         {
-            JobHandlerFactory = new DefaultJobHandlerFactory();
+            //JobHandlerFactory = new DefaultJobHandlerFactory();
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             LogRetentionDays = Constants.DefaultLogRetentionDays;
             AdminAddresses = new List<string>();
-            LoggerFactory = NullLoggerFactory.Instance;
+            //LoggerFactory = NullLoggerFactory.Instance;
         }
 
         public string AccessToken { get; set; }
 
-        public JobHandlerFactory JobHandlerFactory { get; set; }
+        //public JobHandlerFactory JobHandlerFactory { get; set; }
 
         /// <summary>
         /// 执行日志保存目录，默认AppDomain.CurrentDomain.BaseDirectory
@@ -43,6 +43,6 @@ namespace XxlJob.Core
         /// <summary>
         /// 用于记录xll-jon自身内部日志的日志提供工厂
         /// </summary>
-        public ILoggerFactory LoggerFactory { get; set; }
+        //public ILoggerFactory LoggerFactory { get; set; }
     }
 }

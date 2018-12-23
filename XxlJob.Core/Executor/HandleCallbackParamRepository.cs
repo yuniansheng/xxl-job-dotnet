@@ -1,5 +1,6 @@
 ﻿using com.xxl.job.core.biz.model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,9 +18,9 @@ namespace XxlJob.Core.Executor
         private readonly JsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
 
-        public HandleCallbackParamRepository(JobExecutorConfig executorConfig)
+        public HandleCallbackParamRepository(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory)
         {
-            _executorConfig = executorConfig;
+            _executorConfig = executorConfig.Value;
 
             _callbackSavePath = Path.Combine(_executorConfig.LogPath, "xxl-job-callback.log");
             var dir = Path.GetDirectoryName(_callbackSavePath);
@@ -29,7 +30,7 @@ namespace XxlJob.Core.Executor
             }
 
             _jsonSerializer = JsonSerializer.Create();
-            _logger = executorConfig.LoggerFactory.CreateLogger<HandleCallbackParamRepository>();
+            _logger = loggerFactory.CreateLogger<HandleCallbackParamRepository>();
         }
 
 

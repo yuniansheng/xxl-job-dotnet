@@ -3,6 +3,7 @@ using com.xxl.job.core.rpc.codec;
 using hessiancsharp.io;
 using java.lang;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,12 +35,12 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        public AdminClient(JobExecutorConfig jobExecutorConfig)
+        public AdminClient(IOptions<JobExecutorConfig> jobExecutorConfig, ILoggerFactory loggerFactory)
         {
-            _jobExecutorConfig = jobExecutorConfig;
+            _jobExecutorConfig = jobExecutorConfig.Value;
             _client = new HttpClient();
             _client.Timeout = Constants.AdminServerDefaultTimeout;
-            _logger = jobExecutorConfig.LoggerFactory.CreateLogger<AdminClient>();
+            _logger = loggerFactory.CreateLogger<AdminClient>();
             InitAddress();
         }
 
