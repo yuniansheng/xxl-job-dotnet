@@ -13,6 +13,8 @@ namespace XxlJob.Core
         public const string LogFileNameCallContextKey = "XxlJob.LogFileName";
         public const int DefaultLogRetentionDays = 30;
 
+        public static TimeSpan RpcRequestExpireTimeSpan = TimeSpan.FromMinutes(3);
+
         public const int MaxCallbackRetryTimes = 10;
         //每次回调最多发送几条记录
         public const int MaxCallbackRecordsPerRequest = 100;

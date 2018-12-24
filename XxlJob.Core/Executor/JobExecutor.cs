@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using XxlJob.Core.Threads;
+using XxlJob.Core.Util;
 
 namespace XxlJob.Core.Executor
 {
@@ -56,12 +57,11 @@ namespace XxlJob.Core.Executor
                 return;
             }
 
-            //todo:为测试方便暂时注释
-            //if (DateTimeExtensions.CurrentTimeMillis() - rpcRequest.createMillisTime > 3 * 60 * 1000)
-            //{
-            //    rpcResponse.errorMsg = "The timestamp difference between admin and executor exceeds the limit.";
-            //    return;
-            //}
+            if (DateTime.UtcNow.Subtract(DateTimeExtensions.FromMillis(rpcRequest.createMillisTime)) > Constants.RpcRequestExpireTimeSpan)
+            {
+                rpcResponse.error = "The timestamp difference between admin and executor exceeds the limit.";
+                return;
+            }
 
             if (!string.IsNullOrEmpty(_executorOption.Value.AccessToken) && _executorOption.Value.AccessToken != rpcRequest.accessToken)
             {
