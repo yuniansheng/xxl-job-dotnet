@@ -12,12 +12,7 @@ namespace XxlJob.Core.DependencyInjection
 {
     public static class XxlJobServiceCollectionExtensions
     {
-        public static IServiceCollection AddXxlJob(this IServiceCollection services)
-        {
-            return AddXxlJob(services, option => { });
-        }
-
-        public static IServiceCollection AddXxlJob(this IServiceCollection services, Action<JobExecutorOption> configure)
+        public static IXxlJobExecutorBuilder AddXxlJob(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -29,9 +24,7 @@ namespace XxlJob.Core.DependencyInjection
 
             services.AddSingleton<JobExecutor>();
             services.AddSingleton<JobThreadFactory>();
-
             services.AddTransient<JobThread>();
-            services.AddSingleton<JobHandlerFactory, DefaultJobHandlerFactory>();
 
             services.AddSingleton<TriggerCallbackThread>();
             services.AddSingleton<AdminClient>();
@@ -41,9 +34,9 @@ namespace XxlJob.Core.DependencyInjection
             {
                 option.LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             });
-            services.Configure<JobExecutorOption>(configure);
 
-            return services;
+            var builder = new DefaultXxlJobExecutorBuilder(services);
+            return builder;
         }
     }
 }

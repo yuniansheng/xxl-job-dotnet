@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace XxlJob.Core.Executor
 {
@@ -11,33 +13,45 @@ namespace XxlJob.Core.Executor
     /// </summary>
     internal class DefaultJobHandlerFactory : JobHandlerFactory
     {
-        private readonly Lazy<Dictionary<string, IJobHandler>> _handlers;
+        private static readonly Lazy<Dictionary<string, Type>> _handlersTypes = new Lazy<Dictionary<string, Type>>(LoadJobHandlers, LazyThreadSafetyMode.ExecutionAndPublication);
 
-        public DefaultJobHandlerFactory()
+        public static Dictionary<string, Type> HandlersTypes
         {
-            _handlers = new Lazy<Dictionary<string, IJobHandler>>(LoadJobHandlers, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+            get
+            {
+                return _handlersTypes.Value;
+            }
+        }
+
+        private readonly IServiceProvider _services;
+
+        public DefaultJobHandlerFactory(IServiceProvider services)
+        {
+            _services = services;
         }
 
         public override IJobHandler GetJobHandler(string handlerName)
         {
-            IJobHandler handler;
-            _handlers.Value.TryGetValue(handlerName, out handler);
-            return handler;
+            Type handlerType;
+            if (_handlersTypes.Value.TryGetValue(handlerName, out handlerType))
+            {
+                return (IJobHandler)_services.GetService(handlerType);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(handlerName), $"can not find the job handler type:{handlerName}");
+            }
         }
 
-        private Dictionary<string, IJobHandler> LoadJobHandlers()
+        private static Dictionary<string, Type> LoadJobHandlers()
         {
-            var handlers = new Dictionary<string, IJobHandler>();
+            var handlers = new Dictionary<string, Type>();
             var interfaceType = typeof(IJobHandler);
             var handlerTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(asm => asm != interfaceType.Assembly)
-                .SelectMany(asm => asm.GetTypes().Where(t => interfaceType.IsAssignableFrom(t)));
-            foreach (var type in handlerTypes)
-            {
-                var instance = (IJobHandler)Activator.CreateInstance(type);
-                handlers.Add(type.Name, instance);
-            }
-            return handlers;
+                .SelectMany(asm => asm.GetTypes().Where(t => interfaceType.IsAssignableFrom(t)))
+                .ToDictionary(t => t.Name, t => t);
+            return handlerTypes;
         }
     }
 }
