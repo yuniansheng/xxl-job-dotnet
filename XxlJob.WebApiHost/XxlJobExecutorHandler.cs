@@ -7,18 +7,18 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using XxlJob.Core;
 using XxlJob.Core.Executor;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace XxlJob.WebApiHost
 {
-    public class XxlJobExecutorHandler : HttpMessageHandler
+    internal class XxlJobExecutorHandler : HttpMessageHandler
     {
         private readonly JobExecutor _executor;
 
-        public XxlJobExecutorHandler(JobExecutor executor)
+        public XxlJobExecutorHandler(IServiceProvider services)
         {
-            _executor = executor;
+            _executor = services.GetService<JobExecutor>();
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -13,7 +13,7 @@ using XxlJob.Core.Threads;
 
 namespace XxlJob.Core.Executor
 {
-    public class JobThreadFactory
+    internal class JobThreadFactory
     {
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();
         private readonly Lazy<TriggerCallbackThread> _callbackThread;

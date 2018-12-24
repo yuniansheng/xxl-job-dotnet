@@ -30,17 +30,7 @@ namespace SampleWeb
                 })
                 .BuildServiceProvider();
 
-            var executor = services.GetRequiredService<JobExecutor>();
-            config.EnableXxlJob(executor);
-
-            //var loggerFactory = services.BuildServiceProvider().GetService<ILoggerFactory>();
-            //config.EnableXxlJob(jobConfig =>
-            //{
-            //    jobConfig.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
-            //    jobConfig.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
-            //    jobConfig.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
-            //    jobConfig.LoggerFactory = loggerFactory;
-            //});
+            config.EnableXxlJob(services);
         }
     }
 

@@ -8,7 +8,7 @@ using System.Web.Routing;
 
 namespace XxlJob.WebApiHost
 {
-    public class XxlJobConstraint : IRouteConstraint
+    internal class XxlJobConstraint : IRouteConstraint
     {
         public bool Match(HttpContextBase httpContext, Route route, string parameterName, RouteValueDictionary values, RouteDirection routeDirection)
         {
