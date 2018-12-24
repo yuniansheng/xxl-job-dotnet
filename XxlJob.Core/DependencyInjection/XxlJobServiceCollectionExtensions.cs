@@ -17,7 +17,7 @@ namespace XxlJob.Core.DependencyInjection
             return AddXxlJob(services, option => { });
         }
 
-        public static IServiceCollection AddXxlJob(this IServiceCollection services, Action<JobExecutorConfig> configure)
+        public static IServiceCollection AddXxlJob(this IServiceCollection services, Action<JobExecutorOption> configure)
         {
             if (services == null)
             {
@@ -37,11 +37,11 @@ namespace XxlJob.Core.DependencyInjection
             services.AddSingleton<AdminClient>();
             services.AddSingleton<HandleCallbackParamRepository>();
 
-            services.Configure<JobExecutorConfig>(option =>
+            services.Configure<JobExecutorOption>(option =>
             {
                 option.LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             });
-            services.Configure<JobExecutorConfig>(configure);
+            services.Configure<JobExecutorOption>(configure);
 
             return services;
         }

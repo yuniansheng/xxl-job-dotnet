@@ -16,13 +16,13 @@ namespace XxlJob.Core.Executor
 {
     public class JobExecutor
     {
-        private readonly JobExecutorConfig _config;
+        private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly JobThreadFactory _jobThreadFactory;
 
-        public JobExecutor(IOptions<JobExecutorConfig> config, JobThreadFactory threadFactory, ILoggerFactory loggerFactory)
+        public JobExecutor(IOptions<JobExecutorOption> executorOption, JobThreadFactory threadFactory, ILoggerFactory loggerFactory)
         {
-            _config = config.Value;
-            JobLogger.Init(config.Value, loggerFactory);
+            _executorOption = executorOption;
+            JobLogger.Init(_executorOption, loggerFactory);
             _jobThreadFactory = threadFactory;
         }
 
@@ -63,7 +63,7 @@ namespace XxlJob.Core.Executor
             //    return;
             //}
 
-            if (!string.IsNullOrEmpty(_config.AccessToken) && _config.AccessToken != rpcRequest.accessToken)
+            if (!string.IsNullOrEmpty(_executorOption.Value.AccessToken) && _executorOption.Value.AccessToken != rpcRequest.accessToken)
             {
                 rpcResponse.error = "The access token[" + rpcRequest.accessToken + "] is wrong.";
                 return;

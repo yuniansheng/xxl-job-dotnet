@@ -16,7 +16,7 @@ namespace XxlJob.Core.Threads
     internal class TriggerCallbackThread
     {
         private readonly ConcurrentQueue<HandleCallbackParam> _callBackQueue = new ConcurrentQueue<HandleCallbackParam>();
-        private readonly JobExecutorConfig _executorConfig;
+        private readonly JobExecutorOption _executorOption;
         private readonly AutoResetEvent _queueHasDataEvent;
         private readonly ILogger _logger;
         private volatile bool toStop = false;
@@ -26,9 +26,9 @@ namespace XxlJob.Core.Threads
         private AdminClient _adminClient;
         private HandleCallbackParamRepository _paramRepository;
 
-        public TriggerCallbackThread(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory, AdminClient adminClient, HandleCallbackParamRepository paramRepository)
+        public TriggerCallbackThread(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory, AdminClient adminClient, HandleCallbackParamRepository paramRepository)
         {
-            _executorConfig = executorConfig.Value;
+            _executorOption = executorOption.Value;
             _queueHasDataEvent = new AutoResetEvent(false);
             _logger = loggerFactory.CreateLogger<TriggerCallbackThread>();
             _adminClient = adminClient;

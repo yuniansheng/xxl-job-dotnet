@@ -10,9 +10,9 @@ using XxlJob.Core.Executor;
 
 namespace XxlJob.Core
 {
-    public class JobExecutorConfig
+    public class JobExecutorOption
     {
-        public JobExecutorConfig()
+        public JobExecutorOption()
         {
             //JobHandlerFactory = new DefaultJobHandlerFactory();
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);

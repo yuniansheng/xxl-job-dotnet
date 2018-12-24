@@ -15,20 +15,16 @@ namespace XxlJob.Core.Executor
 {
     public class JobThreadFactory
     {
-        private readonly JobExecutorConfig _executorConfig;
         private readonly Dictionary<int, JobThread> _jobThreads = new Dictionary<int, JobThread>();
         private readonly Lazy<TriggerCallbackThread> _callbackThread;
         private readonly object _syncObject = new object();
         private readonly ILogger _logger;
-        private readonly ILoggerFactory _loggerFactory;
         private readonly IServiceProvider _services;
 
-        public JobThreadFactory(IServiceProvider services, IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory)
+        public JobThreadFactory(IServiceProvider services, ILoggerFactory loggerFactory)
         {
             _services = services;
-            _executorConfig = executorConfig.Value;
             _callbackThread = new Lazy<TriggerCallbackThread>(CreateAndStartCallbackThread, LazyThreadSafetyMode.ExecutionAndPublication);
-            _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<JobThreadFactory>();
         }
 

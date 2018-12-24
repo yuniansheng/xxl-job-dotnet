@@ -1,5 +1,6 @@
 ﻿using com.xxl.job.core.biz.model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,15 +15,15 @@ namespace XxlJob.Core
 {
     public static class JobLogger
     {
-        private static JobExecutorConfig JobExecutorConfig;
+        private static IOptions<JobExecutorOption> _executorOption;
 
         private static AsyncLocal<string> LogFileName = new AsyncLocal<string>();
 
         private static ILogger _logger;
 
-        internal static void Init(JobExecutorConfig config, ILoggerFactory loggerFactory)
+        internal static void Init(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory)
         {
-            JobExecutorConfig = config;
+            _executorOption = executorOption;
             _logger = loggerFactory.CreateLogger("XxlJob.Core.JobLogger");
         }
 
@@ -144,13 +145,13 @@ namespace XxlJob.Core
         private static string MakeLogFileName(long logDateTime, int logId)
         {
             //log fileName like: logPath/HandlerLogs/yyyy-MM-dd/9999.log
-            return Path.Combine(JobExecutorConfig.LogPath, Constants.HandleLogsDirectory,
+            return Path.Combine(_executorOption.Value.LogPath, Constants.HandleLogsDirectory,
                 DateTimeExtensions.FromMillis(logDateTime).ToString("yyyy-MM-dd"), $"{logId}.log");
         }
 
         private static void CleanOldLogs()
         {
-            if (JobExecutorConfig.LogRetentionDays <= 0)
+            if (_executorOption.Value.LogRetentionDays <= 0)
             {
                 return;
             }
@@ -159,7 +160,7 @@ namespace XxlJob.Core
             {
                 try
                 {
-                    var handlerLogsDir = new DirectoryInfo(Path.Combine(JobExecutorConfig.LogPath, Constants.HandleLogsDirectory));
+                    var handlerLogsDir = new DirectoryInfo(Path.Combine(_executorOption.Value.LogPath, Constants.HandleLogsDirectory));
                     if (!handlerLogsDir.Exists)
                     {
                         return;
@@ -171,7 +172,7 @@ namespace XxlJob.Core
                         DateTime dirDate;
                         if (DateTime.TryParse(dir.Name, out dirDate))
                         {
-                            if (today.Subtract(dirDate.Date).Days > JobExecutorConfig.LogRetentionDays)
+                            if (today.Subtract(dirDate.Date).Days > _executorOption.Value.LogRetentionDays)
                             {
                                 dir.Delete(true);
                             }

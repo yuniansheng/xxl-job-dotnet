@@ -21,7 +21,7 @@ namespace XxlJob.Core.Executor
 {
     internal class AdminClient
     {
-        private readonly JobExecutorConfig _jobExecutorConfig;
+        private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly HttpClient _client;
         private readonly ILogger _logger;
         private List<AddressEntry> _addresses;
@@ -35,9 +35,9 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        public AdminClient(IOptions<JobExecutorConfig> jobExecutorConfig, ILoggerFactory loggerFactory)
+        public AdminClient(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory)
         {
-            _jobExecutorConfig = jobExecutorConfig.Value;
+            _executorOption = executorOption;
             _client = new HttpClient();
             _client.Timeout = Constants.AdminServerDefaultTimeout;
             _logger = loggerFactory.CreateLogger<AdminClient>();
@@ -56,7 +56,7 @@ namespace XxlJob.Core.Executor
             var request = new RpcRequest()
             {
                 createMillisTime = DateTimeExtensions.CurrentTimeMillis(),
-                accessToken = _jobExecutorConfig.AccessToken,
+                accessToken = _executorOption.Value.AccessToken,
                 className = "com.xxl.job.core.biz.AdminBiz",
                 methodName = methodName,
                 parameterTypes = new ArrayList(paramTypes.Select(item => new Class(item)).ToArray()),
@@ -114,7 +114,7 @@ namespace XxlJob.Core.Executor
         private void InitAddress()
         {
             _addresses = new List<AddressEntry>();
-            foreach (var item in _jobExecutorConfig.AdminAddresses)
+            foreach (var item in _executorOption.Value.AdminAddresses)
             {
                 try
                 {

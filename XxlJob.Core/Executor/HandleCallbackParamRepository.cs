@@ -13,16 +13,15 @@ namespace XxlJob.Core.Executor
 {
     internal class HandleCallbackParamRepository
     {
-        private readonly JobExecutorConfig _executorConfig;
+        private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly string _callbackSavePath;
         private readonly JsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
 
-        public HandleCallbackParamRepository(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory)
+        public HandleCallbackParamRepository(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory)
         {
-            _executorConfig = executorConfig.Value;
-
-            _callbackSavePath = Path.Combine(_executorConfig.LogPath, "xxl-job-callback.log");
+            _executorOption = executorOption;
+            _callbackSavePath = Path.Combine(_executorOption.Value.LogPath, "xxl-job-callback.log");
             var dir = Path.GetDirectoryName(_callbackSavePath);
             if (!Directory.Exists(dir))
             {

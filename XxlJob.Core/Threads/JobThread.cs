@@ -13,7 +13,7 @@ namespace XxlJob.Core.Threads
 {
     public class JobThread
     {
-        private readonly JobExecutorConfig _executorConfig;
+        private readonly JobExecutorOption _executorConfig;
         private readonly ConcurrentQueue<TriggerParam> _triggerQueue;
         // avoid repeat trigger for the same TRIGGER_LOG_ID
         private readonly ConcurrentDictionary<int, byte> _triggerLogIdSet;
@@ -30,7 +30,7 @@ namespace XxlJob.Core.Threads
 
         public bool Stopped { get { return _toStop; } }
 
-        public JobThread(IOptions<JobExecutorConfig> executorConfig, ILoggerFactory loggerFactory, JobHandlerFactory jobHandlerFactory)
+        public JobThread(IOptions<JobExecutorOption> executorConfig, ILoggerFactory loggerFactory, JobHandlerFactory jobHandlerFactory)
         {
             _executorConfig = executorConfig.Value;
             _triggerQueue = new ConcurrentQueue<TriggerParam>();
