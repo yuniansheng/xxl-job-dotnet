@@ -63,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ProxyTest.cs" />
-    <Compile Include="ThreadTest.cs" />
     <Compile Include="HessianTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
