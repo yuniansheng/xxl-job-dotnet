@@ -14,16 +14,12 @@ namespace XxlJob.Core
     {
         public JobExecutorOption()
         {
-            //JobHandlerFactory = new DefaultJobHandlerFactory();
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             LogRetentionDays = Constants.DefaultLogRetentionDays;
             AdminAddresses = new List<string>();
-            //LoggerFactory = NullLoggerFactory.Instance;
         }
 
         public string AccessToken { get; set; }
-
-        //public JobHandlerFactory JobHandlerFactory { get; set; }
 
         /// <summary>
         /// 执行日志保存目录，默认AppDomain.CurrentDomain.BaseDirectory
@@ -39,10 +35,5 @@ namespace XxlJob.Core
         /// 调度中心地址列表，多个用逗号分隔，例如 "http://address" or "http://address01,http://address02"
         /// </summary>
         public List<string> AdminAddresses { get; set; }
-
-        /// <summary>
-        /// 用于记录xll-jon自身内部日志的日志提供工厂
-        /// </summary>
-        //public ILoggerFactory LoggerFactory { get; set; }
     }
 }

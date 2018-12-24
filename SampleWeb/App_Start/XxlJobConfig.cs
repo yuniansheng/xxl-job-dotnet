@@ -12,7 +12,6 @@ using XxlJob.WebApiHost;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using XxlJob.Core.DependencyInjection;
-using XxlJob.Core.Executor;
 
 namespace SampleWeb
 {
@@ -21,16 +20,16 @@ namespace SampleWeb
         public static void Register(HttpConfiguration config)
         {
             var services = new ServiceCollection()
-                .AddLogging(logging => logging.AddDebug());
-
-            services
-                .AddXxlJob()
-                .AddDefaultJobHandlerFactory()
-                .Configure(option =>
+                .AddLogging(logging => logging.AddDebug())
+                .AddXxlJob(xxlJob =>
                 {
-                    option.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
-                    option.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
-                    option.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
+                    xxlJob
+                        .Configure(option =>
+                        {
+                            option.AdminAddresses.Add("http://172.18.21.144:8080/xxl-job-admin");
+                            option.AdminAddresses.Add("http://localhost:8080/xxl-job-admin-191");
+                            option.AccessToken = "cdaff813abf02ffe06be0469b3f3ef43";
+                        });
                 });
 
             config.EnableXxlJob(services.BuildServiceProvider());

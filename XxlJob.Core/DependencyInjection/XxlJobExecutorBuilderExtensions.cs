@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,10 +46,11 @@ namespace XxlJob.Core.DependencyInjection
         }
 
         /// <summary>
-        /// 添加默认DefaultJobHandlerFactory，默认实现会自动加载所有继承自<see cref="IJobHandler"/>的类
+        /// 添加默认JobHandlerFactory，默认实现会自动加载所有继承自<see cref="IJobHandler"/>的类
+        /// <para>如果没有手动调用此方法，框架内部会自动调用AddDefaultJobHandlerFactory(true)</para>
         /// </summary>
         /// <param name="isJobHandlerSingleton">如果传true则每次执行作业使用同一个<see cref="IJobHandler"/>实例，否则每次生成新的实例</param>        
-        public static IXxlJobExecutorBuilder AddDefaultJobHandlerFactory(this IXxlJobExecutorBuilder builder, bool isJobHandlerSingleton = true)
+        public static IXxlJobExecutorBuilder AddDefaultJobHandlerFactory(this IXxlJobExecutorBuilder builder, bool isJobHandlerSingleton)
         {
             if (builder == null)
             {
@@ -58,9 +60,9 @@ namespace XxlJob.Core.DependencyInjection
             var lifetime = isJobHandlerSingleton ? ServiceLifetime.Singleton : ServiceLifetime.Transient;
             foreach (var type in DefaultJobHandlerFactory.HandlersTypes.Values)
             {
-                builder.Services.Add(ServiceDescriptor.Describe(type, type, lifetime));
+                builder.Services.TryAdd(ServiceDescriptor.Describe(type, type, lifetime));
             }
-            builder.Services.AddSingleton<JobHandlerFactory, DefaultJobHandlerFactory>();
+            builder.Services.TryAddSingleton<JobHandlerFactory, DefaultJobHandlerFactory>();
 
             return builder;
         }

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +10,7 @@ namespace XxlJob.Core.DependencyInjection
 {
     public static class XxlJobServiceCollectionExtensions
     {
-        public static IXxlJobExecutorBuilder AddXxlJob(this IServiceCollection services)
+        public static IServiceCollection AddXxlJob(this IServiceCollection services, Action<IXxlJobExecutorBuilder> configure)
         {
             if (services == null)
             {
@@ -30,13 +28,10 @@ namespace XxlJob.Core.DependencyInjection
             services.AddSingleton<AdminClient>();
             services.AddSingleton<HandleCallbackParamRepository>();
 
-            services.Configure<JobExecutorOption>(option =>
-            {
-                option.LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
-            });
-
             var builder = new DefaultXxlJobExecutorBuilder(services);
-            return builder;
+            configure(builder);
+            builder.AddDefaultJobHandlerFactory(true);
+            return services;
         }
     }
 }
