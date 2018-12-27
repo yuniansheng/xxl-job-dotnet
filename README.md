@@ -75,7 +75,7 @@ public class TestHandler : IJobHandler
 }
 ```
 
-# 如果查看xxl-job-net组件本身的异常日志
+# 如何查看xxl-job-net组件本身的异常日志
 注意这里强调了是xxl-job-net组件本身的异常日志，而不是任务执行日志，任务执行日志是记录在本地文件中的，可以在xxl-job-admin中查看，这里说的是xxl-job-net内部发生异常，如果xxl-job-net未按预期运行，如何查看日志以便定位问题呢？xxl-job-net使用了Microsoft.Extensions.Logging组件，你可以通过`ServiceCollection`的扩展方法配置日志提供程序，具体方法不在这里介绍，如果你使用过aspnet core应该对xxl-job-net的配置方式不会感到陌生，否则你应该看看asnet core中[依赖注入](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/dependency-injection)、[配置](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/configuration)、[选项](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/configuration/options)、[日志记录](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/logging)等章节，然后使用起来会更顺手
 
 # 其它说明
