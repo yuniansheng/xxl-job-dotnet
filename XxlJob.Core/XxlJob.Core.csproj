@@ -3,19 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>XxlJob.Core</RootNamespace>
+    <Authors>nelson</Authors>
+    <Description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it</Description>
+    <PackageTags>xxl-job distributed scheduling</PackageTags>
+    <PackageReleaseNotes>current version support xxl-job server 1.9.1</PackageReleaseNotes>
+    <Version>1.0.0-pre1</Version>    
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HessianCSharp.IO" Version="1.0.0-pre1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Hessiancsharp">
-      <HintPath>..\Lib\Hessiancsharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

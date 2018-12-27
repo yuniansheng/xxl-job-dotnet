@@ -41,9 +41,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hessiancsharp, Version=1.0.1873.35216, Culture=neutral">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\Hessiancsharp.dll</HintPath>
+    <Reference Include="HessianCSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\HessianCSharp.IO.1.0.0-pre1\lib\netstandard2.0\HessianCSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
