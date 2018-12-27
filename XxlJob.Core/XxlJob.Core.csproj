@@ -7,7 +7,8 @@
     <Description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it</Description>
     <PackageTags>xxl-job distributed scheduling</PackageTags>
     <PackageReleaseNotes>current version support xxl-job server 1.9.1</PackageReleaseNotes>
-    <Version>1.0.0-pre1</Version>    
+    <Version>1.0.0-pre1</Version>
+    <RepositoryUrl>https://github.com/yuniansheng/xxl-job-dotnet</RepositoryUrl>    
   </PropertyGroup>
 
   <ItemGroup>
