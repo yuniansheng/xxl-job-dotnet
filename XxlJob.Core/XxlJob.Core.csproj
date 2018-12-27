@@ -7,14 +7,14 @@
     <Description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it</Description>
     <PackageTags>xxl-job distributed scheduling</PackageTags>
     <PackageReleaseNotes>current version support xxl-job server 1.9.1</PackageReleaseNotes>
-    <Version>1.0.0-pre1</Version>
+    <Version>1.0.0</Version>
     <RepositoryUrl>https://github.com/yuniansheng/xxl-job-dotnet.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/yuniansheng/xxl-job-dotnet</PackageProjectUrl>    
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HessianCSharp.IO" Version="1.0.0-pre1" />
+    <PackageReference Include="HessianCSharp.IO" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.2.0" />

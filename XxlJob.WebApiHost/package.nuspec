@@ -2,13 +2,13 @@
 <package>
   <metadata>
     <id>XxlJob.WebApiHost</id>
-    <version>1.0.0-pre1</version>
+    <version>1.0.0</version>
     <title>xxl-job executor hosted in webapi</title>
     <authors>nelson</authors>
     <owners>nelson</owners>
-    <licenseUrl></licenseUrl>
+    <!--<licenseUrl></licenseUrl>-->
     <projectUrl>https://github.com/yuniansheng/xxl-job-dotnet</projectUrl>
-    <iconUrl></iconUrl>
+    <!--<iconUrl></iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it</description>
     <releaseNotes></releaseNotes>
