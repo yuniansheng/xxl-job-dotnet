@@ -1,0 +1,5 @@
+MSBuild /p:Configuration=Release
+
+dotnet pack -o ..\artifacts -c Release .\XxlJob.Core
+dotnet pack -o ..\artifacts -c Release .\XxlJob.AspNetCoreHost
+nuget pack .\XxlJob.WebApiHost -OutputDirectory artifacts -Properties Configuration=Release
