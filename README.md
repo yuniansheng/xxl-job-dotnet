@@ -51,7 +51,32 @@ config.EnableXxlJob(services.BuildServiceProvider(),"xxl-job")
 
 
 # aspnet core承载方式
-目前还在开发中，即将发布，将会使用aspnet core的中间件方式承载执行器
+在Startup中配置xxl-job相关的服务和管道，这里使用了配置文件方式加载xxl-job配置，要求 .net core 2.0+ 版本
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddXxlJob(xxlJob =>
+    {
+        xxlJob.Configure(Configuration.GetSection("XxlJob"));
+    });
+    services.AddMvc();
+}
+
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    app.UseXxlJob();
+
+    app.UseMvc();
+}
+```
+上面代码中```Configuration.GetSection("XxlJob")```从配置文件中读取配置初始化xxl-job
+```json
+{
+  "XxlJob": {
+    "AdminAddresses": [ "http://localhost:8080/xxl-job-admin" ]
+  }
+}
+```
 
 # xxl-job配置
 AdminAddress 如上述示例代码中的配置，它表示调度器的地址，如果调度器是集群部署的，则可以添加多个，执行器内部会自动选择，此配置是必须的\
