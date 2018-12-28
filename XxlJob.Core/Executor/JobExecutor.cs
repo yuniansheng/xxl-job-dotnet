@@ -15,7 +15,7 @@ using XxlJob.Core.Util;
 
 namespace XxlJob.Core.Executor
 {
-    internal class JobExecutor
+    public class JobExecutor
     {
         private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly JobThreadFactory _jobThreadFactory;

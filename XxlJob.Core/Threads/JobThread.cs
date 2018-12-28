@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace XxlJob.Core.Threads
 {
-    internal class JobThread
+    public class JobThread
     {
         private readonly JobExecutorOption _executorConfig;
         private readonly ConcurrentQueue<TriggerParam> _triggerQueue;
