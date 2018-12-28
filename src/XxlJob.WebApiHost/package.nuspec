@@ -17,8 +17,8 @@
     <dependencies>
       <dependency id="XxlJob.Core" version="1.0.0" />
       <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
-      <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.2.0" />
-      <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.2.0" />
+      <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
+      <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
     </dependencies>
   </metadata>
 </package>
