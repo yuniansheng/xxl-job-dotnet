@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>XxlJob.WebApiHost</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>xxl-job executor hosted in webapi</title>
     <authors>nelson</authors>
     <owners>nelson</owners>
@@ -10,12 +10,12 @@
     <projectUrl>https://github.com/yuniansheng/xxl-job-dotnet</projectUrl>
     <!--<iconUrl></iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it</description>
-    <releaseNotes></releaseNotes>
+    <description>xxl-job is a lightweight distributed task scheduling framework, and this package provide an executor client for it. XxlJob.WebApiHost host the job executor in a webapi application.</description>
+    <releaseNotes>current version support xxl-job server 1.9.1</releaseNotes>
     <copyright></copyright>
     <tags>xxl-job distributed scheduling</tags>
     <dependencies>
-      <dependency id="XxlJob.Core" version="1.0.0" />
+      <dependency id="XxlJob.Core" version="1.0.1" />
       <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
       <dependency id="Microsoft.Extensions.Logging.Abstractions" version="2.0.0" />
       <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="2.0.0" />
