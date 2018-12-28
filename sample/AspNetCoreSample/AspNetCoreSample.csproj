@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\XxlJob.AspNetCoreHost\XxlJob.AspNetCoreHost.csproj" />
-    <ProjectReference Include="..\..\XxlJob.Core\XxlJob.Core.csproj" />
+    <ProjectReference Include="..\..\src\XxlJob.AspNetCoreHost\XxlJob.AspNetCoreHost.csproj" />
   </ItemGroup>
 
 </Project>
