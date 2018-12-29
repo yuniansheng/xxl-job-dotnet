@@ -5,8 +5,8 @@
     <RepositoryUrl>https://github.com/yuniansheng/xxl-job-dotnet.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/yuniansheng/xxl-job-dotnet</PackageProjectUrl>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>xxl-job is a lightweight distributed task scheduling framework. </Description>
-    <PackageReleaseNotes>current version support xxl-job server 1.9.1</PackageReleaseNotes>
+    <PackageReleaseNotes>修复缺少dll引用时导致注册JobHandler报ReflectionTypeLoadException异常的问题</PackageReleaseNotes>
   </PropertyGroup>
 </Project>

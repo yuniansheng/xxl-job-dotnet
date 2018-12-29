@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,9 +50,21 @@ namespace XxlJob.Core.Executor
             var interfaceType = typeof(IJobHandler);
             var handlerTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(asm => asm != interfaceType.Assembly)
-                .SelectMany(asm => asm.GetTypes().Where(t => interfaceType.IsAssignableFrom(t)))
+                .SelectMany(asm => GetLoadableTypes(asm).Where(t => !t.IsInterface && !t.IsAbstract && interfaceType.IsAssignableFrom(t)))
                 .ToDictionary(t => t.Name, t => t);
             return handlerTypes;
+        }
+
+        private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
         }
     }
 }
