@@ -5,7 +5,7 @@
 ![blockchain](https://raw.githubusercontent.com/xuxueli/xxl-job/master/doc/images/img_Qohm.png)
 
 # aspnet webapi承载方式
-在webapi项目中引用XxlJob.WebApiHost包，因为XxlJob.Core是面向netstandard2.0的，所以 .net framework版本要求4.6.1+，然后按如下示例更改代码
+在webapi项目中引用XxlJob.WebApiHost这个nuget包，因为XxlJob.Core是面向netstandard2.0的，所以 .net framework版本要求4.6.1+，然后按如下示例更改代码
 
 ```C#
 //在Application_Start中加入XxlJob配置
@@ -51,7 +51,7 @@ config.EnableXxlJob(services.BuildServiceProvider(),"xxl-job")
 
 
 # aspnet core承载方式
-在Startup中配置xxl-job相关的服务和管道，这里使用了配置文件方式加载xxl-job配置，要求 .net core 2.0+ 版本
+在aspnetcore项目中引用XxlJob.AspNetCoreHost这个nuget包，然后在Startup中配置xxl-job相关的服务和管道，这里使用了配置文件方式加载xxl-job配置，要求 .net core 2.0+ 版本
 ```c#
 public void ConfigureServices(IServiceCollection services)
 {
