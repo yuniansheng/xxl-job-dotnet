@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using XxlJob.Core.Executor;
+using XxlJob.Core.RPC;
 using XxlJob.Core.Threads;
 
 namespace XxlJob.Core.DependencyInjection
@@ -28,9 +30,12 @@ namespace XxlJob.Core.DependencyInjection
             services.AddSingleton<AdminClient>();
             services.AddSingleton<HandleCallbackParamRepository>();
 
+            services.AddSingleton<ISerializer>(provider => provider.GetService<IOptions<JobExecutorOption>>().Value.SerializeProtocol.GetSerializer());
+
             var builder = new DefaultXxlJobExecutorBuilder(services);
             configure(builder);
-            builder.AddDefaultJobHandlerFactory(true);
+            builder.AddDefaultJobHandlerFactory(true);            
+
             return services;
         }
     }

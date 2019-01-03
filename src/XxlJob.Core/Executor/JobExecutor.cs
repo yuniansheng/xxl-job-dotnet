@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using XxlJob.Core.RPC;
 using XxlJob.Core.Threads;
 using XxlJob.Core.Util;
 
@@ -19,53 +20,49 @@ namespace XxlJob.Core.Executor
     {
         private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly JobThreadFactory _jobThreadFactory;
+        private readonly ISerializer _serializer;
 
-        public JobExecutor(IOptions<JobExecutorOption> executorOption, JobThreadFactory threadFactory, ILoggerFactory loggerFactory)
+        public JobExecutor(IOptions<JobExecutorOption> executorOption, JobThreadFactory threadFactory, ILoggerFactory loggerFactory, ISerializer serializer)
         {
             _executorOption = executorOption;
             JobLogger.Init(_executorOption, loggerFactory);
             _jobThreadFactory = threadFactory;
+            _serializer = serializer;
         }
 
         public byte[] HandleRequest(Stream inputStream)
         {
-            var hessianInput = new CHessianInput(inputStream);
-            var rpcRequest = hessianInput.ReadObject() as RpcRequest;
-            var rpcResponse = new RpcResponse();
+            var rpcRequest = _serializer.Deserialize(inputStream) as RpcRequest;
+            var rpcResponse = rpcRequest.CreateRpcResponse();
             if (rpcRequest == null)
             {
-                rpcResponse.error = "The request is not valid.";
+                rpcResponse.Error = "The request is not valid.";
             }
             else
             {
-                rpcResponse.requestId = rpcRequest.requestId;
                 InvokeService(rpcRequest, rpcResponse);
             }
 
-            using (var outputStream = new MemoryStream())
-            {
-                new CHessianOutput(outputStream).WriteObject(rpcResponse);
-                return outputStream.GetBuffer();
-            }
+            return _serializer.Serialize(rpcResponse);
         }
 
         private void InvokeService(RpcRequest rpcRequest, RpcResponse rpcResponse)
         {
             if (rpcRequest.className != "com.xxl.job.core.biz.ExecutorBiz")
             {
-                rpcResponse.error = "The request is not a xxl-job request.";
+                rpcResponse.Error = "The request is not a xxl-job request.";
                 return;
             }
 
             if (DateTime.UtcNow.Subtract(DateTimeExtensions.FromMillis(rpcRequest.createMillisTime)) > Constants.RpcRequestExpireTimeSpan)
             {
-                rpcResponse.error = "The timestamp difference between admin and executor exceeds the limit.";
+                rpcResponse.Error = "The timestamp difference between admin and executor exceeds the limit.";
                 return;
             }
 
             if (!string.IsNullOrEmpty(_executorOption.Value.AccessToken) && _executorOption.Value.AccessToken != rpcRequest.accessToken)
             {
-                rpcResponse.error = "The access token[" + rpcRequest.accessToken + "] is wrong.";
+                rpcResponse.Error = "The access token[" + rpcRequest.accessToken + "] is wrong.";
                 return;
             }
 
@@ -75,7 +72,7 @@ namespace XxlJob.Core.Executor
                 var method = type.GetMethod(rpcRequest.methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
                 if (method == null)
                 {
-                    rpcResponse.error = "The method[" + rpcRequest.methodName + "] not found.";
+                    rpcResponse.Error = "The method[" + rpcRequest.methodName + "] not found.";
                     return;
                 }
                 var result = method.Invoke(this, rpcRequest.parameters.ToArray());
@@ -83,7 +80,7 @@ namespace XxlJob.Core.Executor
             }
             catch (Exception ex)
             {
-                rpcResponse.error = ex.ToString();
+                rpcResponse.Error = ex.ToString();
             }
         }
 

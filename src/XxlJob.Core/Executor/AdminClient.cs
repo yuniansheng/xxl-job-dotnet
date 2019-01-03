@@ -15,6 +15,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using XxlJob.Core.RPC;
 using XxlJob.Core.Util;
 
 namespace XxlJob.Core.Executor
@@ -24,6 +25,7 @@ namespace XxlJob.Core.Executor
         private readonly IOptions<JobExecutorOption> _executorOption;
         private readonly HttpClient _client;
         private readonly ILogger _logger;
+        private readonly ISerializer _serializer;
         private List<AddressEntry> _addresses;
         private int _currentAdminIndex;
 
@@ -35,12 +37,13 @@ namespace XxlJob.Core.Executor
             }
         }
 
-        public AdminClient(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory)
+        public AdminClient(IOptions<JobExecutorOption> executorOption, ILoggerFactory loggerFactory, ISerializer serializer)
         {
             _executorOption = executorOption;
             _client = new HttpClient();
             _client.Timeout = Constants.AdminServerDefaultTimeout;
             _logger = loggerFactory.CreateLogger<AdminClient>();
+            _serializer = serializer;
             InitAddress();
         }
 
@@ -63,10 +66,7 @@ namespace XxlJob.Core.Executor
                 parameters = new ArrayList(parameters)
             };
 
-            var ms = new MemoryStream();
-            var serializer = new CHessianOutput(ms);
-            serializer.WriteObject(request);
-            var responseBody = ms.ToArray();
+            var responseBody = _serializer.Serialize(request);
 
             int triedTimes = 0;
             while (triedTimes++ < _addresses.Count)
@@ -93,14 +93,14 @@ namespace XxlJob.Core.Executor
                     continue;
                 }
 
-                var rpcResponse = (RpcResponse)new CHessianInput(responseStream).ReadObject();
+                var rpcResponse = (RpcResponse)_serializer.Deserialize(responseStream);
                 if (rpcResponse == null)
                 {
                     throw new Exception("xxl-rpc response not found.");
                 }
                 if (rpcResponse.IsError)
                 {
-                    throw new Exception(rpcResponse.error);
+                    throw new Exception(rpcResponse.Error);
                 }
                 else
                 {

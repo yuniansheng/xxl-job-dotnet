@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using XxlJob.Core.Executor;
+using XxlJob.Core.RPC;
 
 namespace XxlJob.Core
 {
@@ -17,6 +18,7 @@ namespace XxlJob.Core
             LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.XxlLogsDefaultRootDirectory);
             LogRetentionDays = Constants.DefaultLogRetentionDays;
             AdminAddresses = new List<string>();
+            SerializeProtocol = SerializeProtocol.Hessian2;
         }
 
         public string AccessToken { get; set; }
@@ -35,5 +37,10 @@ namespace XxlJob.Core
         /// 调度中心地址列表，多个用逗号分隔，例如 "http://address" or "http://address01,http://address02"
         /// </summary>
         public List<string> AdminAddresses { get; set; }
+
+        /// <summary>
+        /// 序列化协议，默认值为Hessian2
+        /// </summary>
+        public SerializeProtocol SerializeProtocol { get; set; }
     }
 }
